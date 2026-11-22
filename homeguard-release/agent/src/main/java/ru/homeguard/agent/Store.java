@@ -107,10 +107,13 @@ public final class Store {
     }
 
     public static void setSecret(Context c, String secret) throws Exception {
-        byte[] iv = new byte[12];
-        new SecureRandom().nextBytes(iv);
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.ENCRYPT_MODE, key(), new GCMParameterSpec(128, iv));
+        // Android Keystore (keystore2, API 31+) генерирует IV сам и запрещает
+        // caller-provided IV в ENCRYPT_MODE. Берём сгенерированный IV из cipher.
+        // Формат "iv:ct" не меняется: DECRYPT_MODE ниже читает IV из префикса,
+        // поэтому секреты, запечатанные прежней версией, остаются совместимыми.
+        cipher.init(Cipher.ENCRYPT_MODE, key());
+        byte[] iv = cipher.getIV();
         byte[] ct = cipher.doFinal(Protocol.utf8(Protocol.normalizeCode(secret)));
         String sealed = Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(ct, Base64.NO_WRAP);
         prefs(c).edit().putString(K_SEC, sealed).apply();

@@ -14,6 +14,7 @@
   var guestbook = loadGuestbook();
   var demoSwitches = { light: false, climate: true, mode: false };
   var checkedTasks = {};
+  var portal = { enabled: !!(window.PORTAL_AUTH && window.PORTAL_AUTH.required), authenticated: !!(window.PORTAL_AUTH && window.PORTAL_AUTH.authenticated), user: null, firstLogin: false, csrf: (window.PORTAL_AUTH && window.PORTAL_AUTH.csrf) || '' };
 
   /* ---------- Утилиты ---------- */
   function esc(value) {
@@ -65,6 +66,160 @@
 
   function notice(text) {
     return '<div class="notice">' + icon('info') + '<span>' + esc(text) + '</span></div>';
+  }
+
+  /* ---------- Портал (локальный защищённый режим) ---------- */
+  async function portalApi(path, opts) {
+    opts = opts || {};
+    var headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
+    if (portal.csrf && (!opts.method || opts.method.toUpperCase() !== 'GET')) headers['X-CSRF-Token'] = portal.csrf;
+    var r = await fetch(path, Object.assign({credentials:'same-origin'}, opts, {headers: headers}));
+    var t = await r.text(); var j={}; try{ j=JSON.parse(t||'{}'); }catch(e){ j={ok:false,error:t}; }
+    if (j && j.csrf) portal.csrf = j.csrf;
+    j._status=r.status; return j;
+  }
+  async function refreshPortal() {
+    if (!portal.enabled) return;
+    try {
+      var me = await portalApi('/api/portal/me', {method:'GET'});
+      portal.authenticated = !!me.authenticated;
+      portal.firstLogin = !!me.first_login;
+      portal.csrf = me.csrf || portal.csrf || '';
+      portal.user = me.authenticated ? {id:me.id,name:me.name,is_admin:!!me.is_admin} : null;
+      window.PORTAL_AUTH = window.PORTAL_AUTH || {}; window.PORTAL_AUTH.authenticated = portal.authenticated; window.PORTAL_AUTH.csrf = portal.csrf;
+    } catch(e) {}
+  }
+  function renderPortalLogin(reason) {
+    return '<div class="page-head"><div class="eyebrow">Защищённый вход</div><h1>Вход для семьи</h1>' +
+      '<p class="lead">' + esc(reason || 'Личные кабинеты и галерея доступны только после входа.') + '</p></div>' +
+      '<div class="card" style="max-width:560px"><form id="portal-login-form" class="guestbook-form">' +
+      '<label><strong>Логин</strong><input id="portal-user" autocomplete="username" required></label>' +
+      '<label><strong>Пароль</strong><input id="portal-pass" type="password" autocomplete="current-password" required></label>' +
+      '<div class="row-actions"><button class="btn btn-primary" type="submit">Войти</button></div>' +
+      '<p class="muted" id="portal-login-msg" style="margin-top:10px"></p></form></div>';
+  }
+  function renderPortalChangePw() {
+    return '<div class="page-head"><div class="eyebrow">Первый вход</div><h1>Смените пароль</h1>' +
+      '<p class="lead">Для защиты кабинета задайте новый пароль (минимум 8 символов).</p></div>' +
+      '<div class="card" style="max-width:560px"><form id="portal-pw-form" class="guestbook-form">' +
+      '<label><strong>Текущий пароль</strong><input id="portal-cur" type="password" autocomplete="current-password" required></label>' +
+      '<label><strong>Новый пароль</strong><input id="portal-new" type="password" autocomplete="new-password" required minlength="8"></label>' +
+      '<label><strong>Повтор нового пароля</strong><input id="portal-new2" type="password" autocomplete="new-password" required minlength="8"></label>' +
+      '<div class="row-actions"><button class="btn btn-primary" type="submit">Сменить пароль</button></div>' +
+      '<p class="muted" id="portal-pw-msg" style="margin-top:10px"></p></form></div>';
+  }
+  function syncPortalHeader() {
+    var actions = document.querySelector('.header-actions');
+    if (!actions) return;
+    var old = document.getElementById('portal-user-badge');
+    if (old) old.remove();
+    var oldA = document.getElementById('portal-admin-link');
+    if (oldA) oldA.remove();
+    if (portal.enabled && portal.authenticated && portal.user) {
+      if (portal.user.is_admin) {
+        var a = document.createElement('a');
+        a.id = 'portal-admin-link';
+        a.className = 'btn btn-small btn-secondary';
+        a.href = '#/admin';
+        a.style.marginRight = '8px';
+        a.textContent = 'Админка';
+        actions.insertBefore(a, actions.firstChild);
+      }
+      var span = document.createElement('span');
+      span.id = 'portal-user-badge';
+      span.className = 'badge badge-soft';
+      span.style.marginRight = '8px';
+      span.innerHTML = esc(portal.user.name) + ' <button class="btn btn-small" data-portal-logout style="margin-left:8px;padding:2px 8px">Выйти</button>';
+      actions.insertBefore(span, actions.firstChild);
+    }
+  }
+
+  function renderPortalAdmin() {
+    if (!portal.user || !portal.user.is_admin) {
+      return '<div class="page-head"><h1>Доступ запрещён</h1><p class="lead">Нужны права администратора.</p></div>';
+    }
+    return '<div class="page-head"><div class="eyebrow">Администрирование</div><h1>Управление порталом</h1>' +
+      '<p class="lead">Пользователи, галерея, новости, публикация. Изменения сохраняются в локальные файлы сайта.</p></div>' +
+      '<div id="portal-admin-msg" class="notice" style="display:none"></div>' +
+      '<section class="section"><div class="card"><div class="widget-head"><h3>Пользователи</h3><span class="tag">пароли/доступ</span></div>' +
+      '<div id="portal-admin-users" class="muted">Загрузка...</div>' +
+      '<div style="margin-top:12px" class="guestbook-form"><label><strong>Сброс пароля</strong><div class="grid grid-3" style="gap:8px">' +
+      '<input id="adm-reset-user" placeholder="ID пользователя">' +
+      '<input id="adm-reset-pw" type="password" placeholder="Новый временный пароль">' +
+      '<button class="btn btn-secondary" id="adm-reset-btn" type="button">Сбросить</button></div></label>' +
+      '<p class="muted">После сброса у пользователя будет first_login=true.</p></div></div></section>' +
+      '<section class="section"><div class="card"><div class="widget-head"><h3>Галерея</h3><span class="tag">фото</span></div>' +
+      '<div class="row-actions" style="margin-bottom:10px"><input id="adm-photo-files" type="file" multiple accept="image/*"><button class="btn btn-secondary" id="adm-upload-btn" type="button">Загрузить фото</button></div>' +
+      '<div id="portal-admin-gallery"></div><div class="row-actions" style="margin-top:10px"><button class="btn btn-secondary" id="adm-add-photo" type="button">Добавить строку</button></div></div></section>' +
+      '<section class="section"><div class="card"><div class="widget-head"><h3>Новости</h3><span class="tag">главная</span></div>' +
+      '<div id="portal-admin-news"></div><div class="row-actions" style="margin-top:10px"><button class="btn btn-secondary" id="adm-add-news" type="button">Добавить новость</button></div></div></section>' +
+      '<section class="section"><div class="card"><div class="widget-head"><h3>Сохранение и публикация</h3><span class="tag tag-demo">влияет на публичный сайт</span></div>' +
+      '<p class="muted">Сохранить — записывает assets/site-data.json и assets/data.js. Опубликовать — выполняет git sync и push в GitHub Pages. Публикуются только данные, которые вы сохранили.</p>' +
+      '<div class="row-actions"><button class="btn btn-primary" id="adm-save-btn" type="button">Сохранить</button><button class="btn btn-secondary" id="adm-publish-btn" type="button">Сохранить и опубликовать</button></div></div></section>';
+  }
+
+  async function loadPortalAdmin() {
+    if (!portal.user || !portal.user.is_admin) return;
+    var msgEl = document.getElementById('portal-admin-msg');
+    function amsg(t, ok) { if(!msgEl) return; msgEl.style.display='block'; msgEl.className='notice ' + (ok===false?'notice-warn':''); msgEl.textContent=t; }
+    try {
+      var [ud, dd] = await Promise.all([portalApi('/api/portal/users',{method:'GET'}), portalApi('/api/portal/data',{method:'GET'})]);
+      if (!ud.ok) { amsg(ud.error||'Ошибка пользователей', false); return; }
+      if (!dd.ok) { amsg(dd.error||'Ошибка данных', false); return; }
+      portal.adminData = dd.data;
+      renderAdminUsers(ud.users || []);
+      renderAdminGallery();
+      renderAdminNews();
+      wireAdminActions(amsg);
+    } catch(e) { amsg('Ошибка загрузки админки', false); }
+  }
+
+  function renderAdminUsers(users) {
+    var el = document.getElementById('portal-admin-users');
+    if (!el) return;
+    el.innerHTML = '<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Имя</th><th>Роль</th><th>Первый вход</th></tr></thead><tbody>' +
+      users.map(function(u){ return '<tr><td>'+esc(u.id)+'</td><td>'+esc(u.name)+'</td><td>'+ (u.is_admin?'admin':'family') +'</td><td>'+ (u.first_login?'да':'нет') +'</td></tr>'; }).join('') +
+      '</tbody></table>';
+  }
+  function renderAdminGallery() {
+    var el = document.getElementById('portal-admin-gallery'); if (!el || !portal.adminData) return;
+    var g = (portal.adminData.SITE_DATA.gallery||[]);
+    el.innerHTML = g.map(function(p,i){
+      return '<div class="card" style="padding:10px;margin:8px 0"><div class="grid grid-3" style="gap:8px">' +
+        '<label>Файл<input data-ag="'+i+'" data-k="file" value="'+esc(p.file||'')+'"></label>' +
+        '<label>Заголовок<input data-ag="'+i+'" data-k="title" value="'+esc(p.title||'')+'"></label>' +
+        '<label>Подпись<input data-ag="'+i+'" data-k="caption" value="'+esc(p.caption||'')+'"></label></div>' +
+        '<div class="row-actions" style="margin-top:8px"><button class="btn btn-small" data-del-ag="'+i+'" type="button">Удалить</button></div></div>';
+    }).join('') || '<p class="muted">Нет фото.</p>';
+    el.querySelectorAll('[data-ag]').forEach(function(inp){ inp.oninput=function(){ portal.adminData.SITE_DATA.gallery[+inp.dataset.ag][inp.dataset.k]=inp.value; }; });
+    el.querySelectorAll('[data-del-ag]').forEach(function(btn){ btn.onclick=function(){ portal.adminData.SITE_DATA.gallery.splice(+btn.dataset.delAg,1); renderAdminGallery(); }; });
+  }
+  function renderAdminNews() {
+    var el = document.getElementById('portal-admin-news'); if (!el || !portal.adminData) return;
+    var n = (portal.adminData.SITE_DATA.news||[]);
+    el.innerHTML = n.map(function(item,i){
+      return '<div class="card" style="padding:10px;margin:8px 0"><div class="grid grid-2" style="gap:8px">' +
+        '<label>Дата<input data-an="'+i+'" data-k="date" value="'+esc(item.date||'')+'"></label>' +
+        '<label>Заголовок<input data-an="'+i+'" data-k="title" value="'+esc(item.title||'')+'"></label></div>' +
+        '<label>Текст<textarea data-an="'+i+'" data-k="text" style="width:100%;min-height:60px">'+esc(item.text||'')+'</textarea></label>' +
+        '<div class="row-actions" style="margin-top:8px"><button class="btn btn-small" data-del-an="'+i+'" type="button">Удалить</button></div></div>';
+    }).join('') || '<p class="muted">Нет новостей.</p>';
+    el.querySelectorAll('[data-an]').forEach(function(inp){ inp.oninput=function(){ portal.adminData.SITE_DATA.news[+inp.dataset.an][inp.dataset.k]=inp.value; }; });
+    el.querySelectorAll('[data-del-an]').forEach(function(btn){ btn.onclick=function(){ portal.adminData.SITE_DATA.news.splice(+btn.dataset.delAn,1); renderAdminNews(); }; });
+  }
+  function wireAdminActions(amsg) {
+    var rb=document.getElementById('adm-reset-btn');
+    if (rb) rb.onclick=async function(){ var uid=document.getElementById('adm-reset-user').value.trim(); var pw=document.getElementById('adm-reset-pw').value; var r=await portalApi('/api/portal/admin/reset-password',{method:'POST',body:JSON.stringify({user_id:uid,new_password:pw})}); amsg(r.ok?'Пароль сброшен для '+uid:(r.error||'Ошибка'), r.ok); if(r.ok) loadPortalAdmin(); };
+    var ab=document.getElementById('adm-add-photo');
+    if (ab) ab.onclick=function(){ (portal.adminData.SITE_DATA.gallery=portal.adminData.SITE_DATA.gallery||[]).push({file:'assets/photos/new-photo.jpg',title:'Новое фото',caption:'Описание'}); renderAdminGallery(); };
+    var an=document.getElementById('adm-add-news');
+    if (an) an.onclick=function(){ (portal.adminData.SITE_DATA.news=portal.adminData.SITE_DATA.news||[]).push({date:'сегодня',title:'Новая новость',text:'Текст'}); renderAdminNews(); };
+    var ub=document.getElementById('adm-upload-btn');
+    if (ub) ub.onclick=async function(){ var inp=document.getElementById('adm-photo-files'); if(!inp.files.length){amsg('Выберите файлы',false);return;} var fd=new FormData(); for(var i=0;i<inp.files.length;i++) fd.append('photos',inp.files[i],inp.files[i].name); var r=await fetch('/api/portal/admin/upload-photo',{method:'POST',body:fd,credentials:'same-origin',headers:{'X-CSRF-Token':portal.csrf}}); var j=await r.json(); if(!j.ok){amsg(j.error||'Ошибка',false);return;} (portal.adminData.SITE_DATA.gallery=portal.adminData.SITE_DATA.gallery||[]); j.saved.forEach(function(s){ portal.adminData.SITE_DATA.gallery.push({file:s.file,title:s.file.split('/').pop(),caption:'Добавьте описание'}); }); inp.value=''; renderAdminGallery(); amsg('Фото загружены'); };
+    var sb=document.getElementById('adm-save-btn');
+    if (sb) sb.onclick=async function(){ var r=await portalApi('/api/portal/admin/save-data',{method:'POST',body:JSON.stringify({data:portal.adminData})}); amsg(r.ok?'Сохранено локально':(r.error||'Ошибка'), r.ok); };
+    var pb=document.getElementById('adm-publish-btn');
+    if (pb) pb.onclick=async function(){ amsg('Сохраняю и публикую...', true); var s=await portalApi('/api/portal/admin/save-data',{method:'POST',body:JSON.stringify({data:portal.adminData})}); if(!s.ok){amsg(s.error||'Ошибка сохранения',false);return;} var r=await portalApi('/api/portal/admin/publish',{method:'POST',body:JSON.stringify({message:'site: portal admin update'})}); amsg(r.ok?('Опубликовано. '+(r.detail||'')):(r.error||r.detail||'Ошибка публикации'), r.ok); };
   }
 
   /* ---------- Страницы ---------- */
@@ -127,21 +282,55 @@
         '<div class="eyebrow">Только для своих</div>' +
         '<h1>' + esc(data.familyTitle) + '</h1>' +
         '<p class="lead">Выберите свой кабинет. У каждого члена семьи — свой набор разделов и свой функционал.</p>' +
+        '<div class="hero-actions"><button class="btn btn-secondary btn-small" type="button" data-scroll="gallery">' +
+          icon('devices') + ' Фотогалерея</button></div>' +
       '</div>' +
       notice('Вход пока демонстрационный: пароли и привязка аккаунтов будут добавлены позже. ' +
         'Выберите профиль, чтобы посмотреть устройство кабинета.') +
+      '<section class="section">' +
+        '<div class="section-head"><div><h2>Кто есть кто</h2></div><p>Семейные связи</p></div>' +
+        '<div class="grid grid-3">' + (data.familyTree || []).map(function (group) {
+          return '<div class="card"><h3>' + esc(group.title) + '</h3>' +
+            '<p class="muted">' + esc(group.hint) + '</p>' +
+            '<ul class="simple-list tree-list">' + group.ids.map(function (id) {
+              var person = memberById(id);
+              if (!person) return '';
+              return '<li><a href="#/cabinet/' + encodeURIComponent(id) + '">' + esc(person.name) + '</a> — ' +
+                esc(person.relation) + '</li>';
+            }).join('') + '</ul></div>';
+        }).join('') + '</div>' +
+      '</section>' +
+
       '<section class="section">' +
         '<div class="section-head"><div><h2>Личные кабинеты</h2></div><p>' + data.members.length + ' профиля в каркасе</p></div>' +
         '<div class="member-grid">' + data.members.map(function (m) {
           return '<a class="member-card" href="#/cabinet/' + encodeURIComponent(m.id) + '" style="--avatar:' + esc(m.color) + '">' +
             '<span class="avatar">' + esc(m.initials) + '</span>' +
-            '<span class="member-name">' + esc(m.name) + '</span>' +
+            '<span class="member-name">' + esc(m.name) + (m.short ? ' (' + esc(m.short) + ')' : '') + '</span>' +
             '<span class="member-meta">' + esc(m.role) + ' · ' + m.modules.length + ' разделов</span>' +
-            '<span class="member-note">' + esc(m.note) + '</span>' +
+            '<span class="member-note">' + esc(m.relation) + '</span>' +
             '<span class="status-line"><span class="dot dot-green"></span>' + esc(m.status) + '</span>' +
           '</a>';
         }).join('') + '</div>' +
       '</section>' +
+
+      '<section class="section" id="gallery">' +
+        '<div class="section-head"><div><div class="eyebrow">Только для своих</div><h2>Семейная галерея</h2></div>' +
+        '<p>Фото добавляются в `assets/photos/`</p></div>' +
+        '<div class="gallery-grid">' + (data.gallery || []).map(function (photo, index) {
+          return '<button class="photo-card" type="button" data-photo="' + esc(photo.file) + '" ' +
+            'data-caption="' + esc(photo.title + ' — ' + photo.caption) + '">' +
+            '<span class="photo-frame">' +
+              '<span class="photo-placeholder">' + icon('spark') + '<small>' + esc(photo.file) + '</small></span>' +
+              '<img src="' + esc(photo.file) + '" alt="' + esc(photo.title) + '" loading="lazy">' +
+            '</span>' +
+            '<span class="photo-info"><strong>' + esc(photo.title) + '</strong><small>' + esc(photo.caption) + '</small></span>' +
+          '</button>';
+        }).join('') + '</div>' +
+        '<p class="muted gallery-hint">Пока файла нет, вместо фото показывается рамка с именем файла. ' +
+        'Нажмите на загруженное фото, чтобы открыть его целиком.</p>' +
+      '</section>' +
+
       '<section class="section">' +
         '<div class="section-head"><div><h2>Общие разделы семьи</h2></div><p>Появятся позже</p></div>' +
         '<div class="grid grid-3">' +
@@ -242,7 +431,8 @@
       '<div class="cabinet">' + sidebar +
         '<div class="cabinet-content">' +
           '<div class="cabinet-top">' +
-            '<div><h1>' + esc(mod.title) + '</h1><p>' + esc(mod.subtitle) + '</p></div>' +
+            '<div><h1>' + esc(mod.title) + '</h1><p>' + esc(mod.subtitle) + '</p>' +
+            '<p class="cabinet-relation">' + esc(member.relation) + '</p></div>' +
             '<div class="header-actions"><a class="btn btn-secondary btn-small" href="#/family">Сменить кабинет</a></div>' +
           '</div>' +
           '<div class="widgets">' + widgets + '</div>' +
@@ -277,7 +467,8 @@
       case 'profile':
         body = '<div class="profile-grid" style="--avatar:' + esc(member.color) + '">' +
           '<div class="avatar">' + esc(member.initials) + '</div>' +
-          '<dl><dt>Имя</dt><dd>' + esc(member.name) + '</dd>' +
+          '<dl><dt>Имя</dt><dd>' + esc(member.name) + (member.short ? ' (' + esc(member.short) + ')' : '') + '</dd>' +
+          '<dt>Родство</dt><dd>' + esc(member.relation) + '</dd>' +
           '<dt>Роль</dt><dd>' + esc(member.role) + '</dd>' +
           '<dt>Статус</dt><dd>' + esc(member.status) + '</dd>' +
           '<dt>Кабинет</dt><dd>' + esc(member.id) + '</dd></dl></div>';
@@ -319,13 +510,27 @@
   function render() {
     var route = currentRoute();
     var html;
-    switch (route.page) {
-      case 'guest': html = renderGuest(); break;
-      case 'family': html = renderFamily(); break;
-      case 'cabinet': html = renderCabinet(route.member, route.module); break;
-      default: html = renderHome();
+    var gated = portal.enabled && (route.page === 'family' || route.page === 'cabinet' || route.page === 'admin');
+    if (gated && !portal.authenticated) {
+      html = renderPortalLogin('Войдите, чтобы открыть раздел семьи и личные кабинеты.');
+    } else if (gated && portal.firstLogin) {
+      html = renderPortalChangePw();
+    } else if (route.page === 'admin') {
+      html = renderPortalAdmin();
+    } else {
+      switch (route.page) {
+        case 'guest': html = renderGuest(); break;
+        case 'family': html = renderFamily(); break;
+        case 'cabinet': html = renderCabinet(route.member, route.module); break;
+        default: html = renderHome();
+      }
     }
     app.innerHTML = html;
+    wireGallery();
+    syncPortalHeader();
+    if (route.page === 'admin' && portal.authenticated && portal.user && portal.user.is_admin && !portal.firstLogin) {
+      loadPortalAdmin();
+    }
 
     var active = route.page === 'cabinet' ? 'family' : route.page;
     var links = document.querySelectorAll('[data-nav]');
@@ -338,7 +543,91 @@
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
+  /* ---------- Галерея ---------- */
+  function wireGallery() {
+    if (typeof app.querySelectorAll !== 'function') return;
+    var cards = app.querySelectorAll('.photo-card');
+    for (var i = 0; i < cards.length; i++) {
+      (function (card) {
+        var img = card.querySelector('img');
+        if (!img) return;
+        img.addEventListener('load', function () { card.classList.add('is-loaded'); });
+        img.addEventListener('error', function () { card.classList.add('is-missing'); });
+        if (img.complete) card.classList.add(img.naturalWidth > 0 ? 'is-loaded' : 'is-missing');
+      })(cards[i]);
+    }
+  }
+
+  function openLightbox(src, caption) {
+    var box = document.getElementById('lightbox');
+    if (!box) return;
+    var img = document.getElementById('lightbox-img');
+    var cap = document.getElementById('lightbox-caption');
+    if (img) { img.src = src; img.alt = caption; }
+    if (cap) cap.textContent = caption;
+    box.hidden = false;
+  }
+
+  function closeLightbox() {
+    var box = document.getElementById('lightbox');
+    if (box) box.hidden = true;
+  }
+
   /* ---------- События ---------- */
+  app.addEventListener('submit', async function (e) {
+    if (e.target.id === 'portal-login-form') {
+      e.preventDefault();
+      var msg = document.getElementById('portal-login-msg');
+      var u = document.getElementById('portal-user').value.trim();
+      var p = document.getElementById('portal-pass').value;
+      var r = await portalApi('/api/portal/login', {method:'POST', body: JSON.stringify({username:u,password:p})});
+      if (!r.ok) { if (msg) msg.textContent = r.error || 'Ошибка входа'; return; }
+      await refreshPortal();
+      if (portal.firstLogin) { render(); }
+      else { location.reload(); }
+      return;
+    }
+    if (e.target.id === 'portal-pw-form') {
+      e.preventDefault();
+      var msg2 = document.getElementById('portal-pw-msg');
+      var cur = document.getElementById('portal-cur').value;
+      var n1 = document.getElementById('portal-new').value;
+      var n2 = document.getElementById('portal-new2').value;
+      if (n1 !== n2) { if (msg2) msg2.textContent = 'Пароли не совпадают'; return; }
+      var r2 = await portalApi('/api/portal/change-password', {method:'POST', body: JSON.stringify({current_password:cur,new_password:n1})});
+      if (!r2.ok) { if (msg2) msg2.textContent = r2.error || 'Ошибка'; return; }
+      await refreshPortal();
+      location.reload();
+      return;
+    }
+  }, true);
+
+  app.addEventListener('click', async function (e) {
+    var logoutBtn = e.target.closest && e.target.closest('[data-portal-logout]');
+    if (logoutBtn) { e.preventDefault(); await portalApi('/api/portal/logout',{method:'POST'}); await refreshPortal(); location.hash='#/home'; location.reload(); return; }
+    var scrollBtn = e.target.closest && e.target.closest('[data-scroll]');
+    if (scrollBtn) {
+      var target = document.getElementById(scrollBtn.getAttribute('data-scroll'));
+      if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    var card = e.target.closest && e.target.closest('.photo-card');
+    if (card && card.classList.contains('is-loaded')) {
+      openLightbox(card.getAttribute('data-photo'), card.getAttribute('data-caption'));
+    }
+  });
+
+  if (document.addEventListener) {
+    document.addEventListener('click', function (e) {
+      if (e.target.id === 'lightbox' || (e.target.classList && e.target.classList.contains('lightbox-close'))) {
+        closeLightbox();
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  }
+
   app.addEventListener('submit', function (e) {
     if (e.target.id !== 'guestbook-form') return;
     e.preventDefault();
@@ -366,6 +655,10 @@
   });
 
   window.addEventListener('hashchange', render);
-  if (!location.hash) location.hash = '#/home';
-  render();
+  async function boot() {
+    if (portal.enabled) await refreshPortal();
+    if (!location.hash) location.hash = '#/home';
+    render();
+  }
+  boot();
 })();

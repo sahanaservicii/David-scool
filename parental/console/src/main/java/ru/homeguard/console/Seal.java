@@ -6,7 +6,6 @@ import android.security.keystore.KeyProperties;
 import android.util.Base64;
 
 import java.security.KeyStore;
-import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -27,10 +26,13 @@ public final class Seal {
 
     public String seal(String plain) {
         try {
-            byte[] iv = new byte[12];
-            new SecureRandom().nextBytes(iv);
             Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
-            c.init(Cipher.ENCRYPT_MODE, key(), new GCMParameterSpec(128, iv));
+            // Android Keystore (keystore2, API 31+) генерирует IV сам и запрещает
+            // caller-provided IV в ENCRYPT_MODE. Берём сгенерированный IV из cipher.
+            // DECRYPT_MODE ниже по-прежнему использует IV из префикса — формат
+            // "iv:ct" не меняется, старые запечатанные данные читаются.
+            c.init(Cipher.ENCRYPT_MODE, key());
+            byte[] iv = c.getIV();
             byte[] ct = c.doFinal(Protocol.utf8(plain));
             return Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(ct, Base64.NO_WRAP);
         } catch (Exception e) {

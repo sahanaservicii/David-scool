@@ -17,5 +17,23 @@ echo "== compile =="
     agent/src/main/java/ru/homeguard/agent/Protocol.java \
     tools/tests/TestRunner.java
 
+echo "== keystore IV regression guard =="
+# Android Keystore (keystore2, API 31+) запрещает caller-provided IV при
+# шифровании. Seal (консоль) и Store (агент) должны брать IV через cipher.getIV().
+# Backup использует паролевый ключ — там IV допустим, он не должен трогаться.
+for f in \
+    console/src/main/java/ru/homeguard/console/Seal.java \
+    agent/src/main/java/ru/homeguard/agent/Store.java; do
+    if grep -E 'init\(Cipher\.ENCRYPT_MODE[^;]*GCMParameterSpec' "$f" >/dev/null; then
+        echo "FAIL: $f использует caller-provided IV при ENCRYPT_MODE" >&2
+        exit 1
+    fi
+    if ! grep -q 'cipher.getIV()\|c.getIV()' "$f"; then
+        echo "FAIL: $f не берёт IV через getIV()" >&2
+        exit 1
+    fi
+done
+echo "guard OK"
+
 echo "== protocol tests =="
 "$JAVA" -cp "$OUT:$ANDROID_JAR" TestRunner

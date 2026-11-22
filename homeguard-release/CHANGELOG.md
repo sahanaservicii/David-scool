@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.1 / 1.3.1 — 2026-11-22 (фикс Android 16)
+
+* Исправлен краш консоли «seal failed» на Android 16 (sdk 36, keystore2):
+  `InvalidAlgorithmParameterException: Caller-provided IV not permitted`.
+  При шифровании через Android Keystore IV теперь берётся из `cipher.getIV()`,
+  а не задаётся вручную. Формат `iv:ct` и дешифрование не изменились — старые
+  запечатанные секреты и `.hgbak` остаются совместимыми.
+* То же исправление в агенте (`Store.setSecret`). `Backup` не тронут: там ключ
+  по паролю, caller-provided IV допустим.
+* Добавлен статический guard в `tools/test.sh`, не дающий вернуть баг.
+
 ## 1.4.1 / 1.3.1 — 2026-11-21 (QR-привязка)
 
 * Консоль показывает крупный QR со всей строкой привязки `hg1:…` — ребёнок
