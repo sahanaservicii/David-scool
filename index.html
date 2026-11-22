@@ -31,12 +31,31 @@
       <div id="gameBody"></div>
     </section>
 
+    <section class="journal" id="journal">
+      <h3>📋 Журнал ошибок</h3>
+      <p class="hint">Здесь всегда видно, где была ошибка и как надо правильно. Данные хранятся в этом браузере.</p>
+      <div id="journalBody"></div>
+      <div class="journal-actions">
+        <button class="next" id="copyReportBtn">Скопировать отчёт для папы</button>
+        <button class="next ghost" id="clearReportBtn">Очистить журнал</button>
+      </div>
+      <div id="copyStatus" class="hint"></div>
+    </section>
+
+    <section class="journal parent">
+      <h3>👨 Для папы: посмотреть отчёт ребёнка</h3>
+      <p class="hint">Ребёнок присылает вам скопированный код — вставьте его сюда и нажмите «Показать разбор».</p>
+      <textarea id="reportInput" rows="3" placeholder="Вставьте код отчёта (начинается с SCHOOL1:)"></textarea>
+      <button class="next" id="showReportBtn">Показать разбор</button>
+      <div id="parentReport"></div>
+    </section>
+
     <section class="how">
       <h3>Как это работает</h3>
       <ol>
         <li>Папа присылает домашку — и на сайте появляется новый день с заданиями.</li>
         <li>Ты выбираешь предмет и играешь: отвечаешь на вопросы, решаешь примеры, учишь слова.</li>
-        <li>За правильные ответы ты получаешь звёздочки. Звёздочки сохраняются в этом браузере.</li>
+        <li>Если ошибся — сразу видно правильный ответ и объяснение. Всё сохраняется в журнале ошибок.</li>
       </ol>
     </section>
   </main>
