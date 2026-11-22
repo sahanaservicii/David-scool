@@ -1,37 +1,144 @@
 // Интерактивная логика. Прогресс и журнал ошибок хранятся в localStorage браузера.
+// Отчёт для папы кодируется компактно: S2|ru=вопрос:ответ,..|math=пример:ответ,..
+// Вопросы и объяснения берутся из data.js на сайте — в QR только индексы.
 const Store = {
   key: 'school-progress-v1',
-  logKey: 'school-error-log-v1',
+  logKey: 'school-error-log-v2',
   load() { try { return JSON.parse(localStorage.getItem(this.key)) || {}; } catch (e) { return {}; } },
   save(data) { localStorage.setItem(this.key, JSON.stringify(data)); },
   stars() { const d = this.load(); return Object.values(d).reduce((s, v) => s + (v.stars || 0), 0); },
   done(id) { const d = this.load(); return !!(d[id] && d[id].done); },
   mark(id, stars) {
     const d = this.load();
-    const prev = d[id] || { stars: 0 };
-    d[id] = { done: true, stars: Math.max(prev.stars || 0, stars) };
+    d[id] = { done: true, stars: Math.max((d[id] || {}).stars || 0, stars) };
     this.save(d);
   },
   log() { try { return JSON.parse(localStorage.getItem(this.logKey)) || {}; } catch (e) { return {}; } },
-  addErrors(subjectId, errors, correct, total) {
-    const d = this.log();
-    d[subjectId] = { errors, correct, total, time: new Date().toISOString() };
-    localStorage.setItem(this.logKey, JSON.stringify(d));
-  },
+  addErrors(id, payload) { const d = this.log(); d[id] = payload; localStorage.setItem(this.logKey, JSON.stringify(d)); },
   clearLog() { localStorage.removeItem(this.logKey); localStorage.removeItem(this.key); }
 };
 
+const Report = {
+  // Собрать компактный код из журнала ошибок
+  encode() {
+    const log = Store.log();
+    const parts = ['S2'];
+    Object.entries(log).forEach(([id, rec]) => {
+      if (!rec || !rec.items || !rec.items.length) return;
+      const encoded = rec.items.map(it => {
+        if (rec.type === 'quiz') return `${it.i}:${it.given}`;
+        if (rec.type === 'math') return `${it.q}:${it.given}`;
+        return '';
+      }).filter(Boolean).join(',');
+      if (encoded) parts.push(`${id}=${encoded}`);
+    });
+    return parts.join('|');
+  },
+  // Разобрать компактный код и показать ошибки с объяснениями
+  decode(code) {
+    const parts = code.trim().split('|');
+    if (parts[0] !== 'S2') throw new Error('Код должен начинаться с S2|');
+    const out = [];
+    parts.slice(1).forEach(seg => {
+      const [id, data] = seg.split('=');
+      if (!data) return;
+      const subj = App.lesson.subjects.find(s => s.id === id);
+      if (!subj) return;
+      if (subj.game === 'quiz') {
+        data.split(',').forEach(pair => {
+          const [i, given] = pair.split(':');
+          const q = subj.questions[Number(i)];
+          if (!q) return;
+          out.push({
+            subject: subj.name, q: q.q, given: q.options[Number(given)] || '—',
+            answer: q.options[q.answer], why: q.why
+          });
+        });
+      } else if (subj.game === 'math') {
+        data.split(',').forEach(pair => {
+          const idx = pair.lastIndexOf(':');
+          if (idx < 0) return;
+          const expr = pair.slice(0, idx).replace(/\s/g, '');
+          const given = pair.slice(idx + 1);
+          let m = expr.match(/^(\d+)([+\-x×÷])(\d+)$/);
+          if (!m) { out.push({ subject: subj.name, q: expr, given, answer: '?', why: 'Не удалось разобрать пример.' }); return; }
+          const a = Number(m[1]), b = Number(m[3]);
+          const op = m[2];
+          const ans = op === '+' ? a + b : op === '-' ? a - b : (op === 'x' || op === '×') ? a * b : a / b;
+          out.push({ subject: subj.name, q: `${a} ${op} ${b}`, given, answer: String(ans), why: 'Посчитай ещё раз внимательно.' });
+        });
+      }
+    });
+    return out;
+  },
+  drawQr(code) {
+    const box = document.getElementById('qrBox');
+    box.innerHTML = '';
+    try {
+      const qr = new window.QRCodeLib(0, 1); // тип 0 = авто, уровень L
+      qr.addData(code);
+      qr.make();
+      const count = qr.getModuleCount();
+      const scale = Math.max(4, Math.floor(240 / count));
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = count * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000';
+      for (let r = 0; r < count; r++)
+        for (let c = 0; c < count; c++)
+          if (qr.isDark(r, c)) ctx.fillRect(c * scale, r * scale, scale, scale);
+      box.appendChild(canvas);
+    } catch (e) {
+      box.textContent = 'Не удалось построить QR: ' + e.message;
+    }
+  }
+};
+
 const App = {
-  lesson: null,
+  lesson: null, role: null,
   init() {
     const data = window.SCHOOL_DATA;
     this.lesson = data.lessons[data.lessons.length - 1];
     document.getElementById('childName').textContent = data.child.name;
+    document.getElementById('pinBtn').onclick = this.checkPin.bind(this);
+    document.getElementById('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') this.checkPin(); });
     this.renderSubjects();
     this.updateProgress();
     document.getElementById('totalStars').textContent = Store.stars();
     this.renderJournal();
-    this.bindJournalButtons();
+    this.bindButtons();
+  },
+  enterChild() {
+    this.role = 'child';
+    document.getElementById('roleGate').classList.add('hidden');
+    document.getElementById('pinGate').classList.add('hidden');
+    document.getElementById('appRoot').classList.remove('hidden');
+    document.getElementById('childView').classList.remove('hidden');
+    document.getElementById('parentView').classList.add('hidden');
+  },
+  askPin() {
+    document.getElementById('roleGate').classList.add('hidden');
+    document.getElementById('pinGate').classList.remove('hidden');
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinError').textContent = '';
+  },
+  checkPin() {
+    if (document.getElementById('pinInput').value === window.SCHOOL_DATA.parentPin) {
+      this.role = 'parent';
+      document.getElementById('pinGate').classList.add('hidden');
+      document.getElementById('appRoot').classList.remove('hidden');
+      document.getElementById('childView').classList.add('hidden');
+      document.getElementById('parentView').classList.remove('hidden');
+    } else {
+      document.getElementById('pinError').textContent = 'Неверный PIN';
+    }
+  },
+  backToGate() {
+    document.getElementById('appRoot').classList.add('hidden');
+    document.getElementById('pinGate').classList.add('hidden');
+    document.getElementById('roleGate').classList.remove('hidden');
   },
   renderSubjects() {
     const box = document.getElementById('subjects');
@@ -56,9 +163,9 @@ const App = {
     document.getElementById('progressText').textContent = `${done} / ${total}`;
     document.getElementById('progressFill').style.width = `${(done / total) * 100}%`;
   },
-  finish(subject, stars, errors, correct, total) {
+  finish(subject, stars, items, type, correct, total) {
     Store.mark(subject.id, stars);
-    Store.addErrors(subject.id, errors, correct, total);
+    Store.addErrors(subject.id, { type, items, correct, total });
     document.getElementById('totalStars').textContent = Store.stars();
     this.renderSubjects();
     this.updateProgress();
@@ -67,96 +174,74 @@ const App = {
   renderJournal() {
     const box = document.getElementById('journalBody');
     const log = Store.log();
-    const entries = Object.entries(log);
-    if (!entries.length) {
+    if (!Object.keys(log).length) {
       box.innerHTML = '<p class="hint">Заданий пока нет. Начните выполнять — здесь появятся ошибки и подсказки.</p>';
       return;
     }
     box.innerHTML = '';
-    entries.forEach(([id, rec]) => {
+    Object.entries(log).forEach(([id, rec]) => {
       const subj = this.lesson.subjects.find(s => s.id === id);
-      const name = subj ? subj.name : id;
       const div = document.createElement('div');
-      div.className = 'report-subject' + (rec.errors.length ? '' : ' clean');
-      let html = `<h4>${name} — ${rec.correct} из ${rec.total} верно</h4>`;
-      if (!rec.errors.length) html += '<div class="error-item"><span class="right">✅ Ошибок нет — отличная работа!</span></div>';
-      rec.errors.forEach(e => {
-        html += `<div class="error-item">
-          <div>❓ ${e.q}</div>
-          <div><span class="wrong">Твой ответ: ${e.given}</span> · <span class="right">Правильно: ${e.answer}</span></div>
-          <div class="why">💡 ${e.why}</div>
-        </div>`;
+      const errors = rec.items || [];
+      div.className = 'report-subject' + (errors.length ? '' : ' clean');
+      let html = `<h4>${subj ? subj.name : id} — ${rec.correct} из ${rec.total} верно</h4>`;
+      if (!errors.length) html += '<div class="error-item"><span class="right">✅ Ошибок нет — отличная работа!</span></div>';
+      errors.forEach(it => {
+        let q, given, answer, why;
+        if (rec.type === 'quiz') {
+          const question = subj.questions[it.i];
+          q = question.q; given = question.options[it.given]; answer = question.options[question.answer]; why = question.why;
+        } else { q = it.q; given = it.given; answer = 'см. проверку'; why = 'Проверь вычисление.'; }
+        html += `<div class="error-item"><div>❓ ${q}</div>
+          <div><span class="wrong">Твой ответ: ${given}</span> · <span class="right">Правильно: ${answer}</span></div>
+          <div class="why">💡 ${why}</div></div>`;
       });
       div.innerHTML = html;
       box.appendChild(div);
     });
   },
-  bindJournalButtons() {
-    document.getElementById('copyReportBtn').onclick = () => {
-      const payload = { child: window.SCHOOL_DATA.child.name, date: this.lesson.date, log: Store.log() };
-      const bytes = new TextEncoder().encode(JSON.stringify(payload));
-      let bin = '';
-      bytes.forEach(b => bin += String.fromCharCode(b));
-      const code = 'SCHOOL1:' + btoa(bin);
-      const ta = document.createElement('textarea');
-      ta.value = code;
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); document.getElementById('copyStatus').textContent = '✅ Код скопирован — отправьте его папе.'; }
-      catch (e) { document.getElementById('copyStatus').textContent = 'Не удалось скопировать автоматически — выделите код вручную: ' + code; }
-      document.body.removeChild(ta);
+  bindButtons() {
+    document.getElementById('showQrBtn').onclick = () => {
+      const code = Report.encode();
+      document.getElementById('compactCode').textContent = code;
+      Report.drawQr(code);
+      document.getElementById('qrModal').classList.remove('hidden');
     };
     document.getElementById('clearReportBtn').onclick = () => {
       if (confirm('Очистить весь журнал ошибок и звёздочки?')) {
-        Store.clearLog();
-        this.renderJournal();
-        this.renderSubjects();
-        this.updateProgress();
+        Store.clearLog(); this.renderJournal(); this.renderSubjects(); this.updateProgress();
         document.getElementById('totalStars').textContent = '0';
       }
     };
     document.getElementById('showReportBtn').onclick = () => {
-      const raw = document.getElementById('reportInput').value.trim();
       const out = document.getElementById('parentReport');
       try {
-        if (!raw.startsWith('SCHOOL1:')) throw new Error('Код должен начинаться с SCHOOL1:');
-        const bin = atob(raw.slice(8));
-        const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
-        const payload = JSON.parse(new TextDecoder().decode(bytes));
-        let html = `<div class="report-subject"><h4>Отчёт: ${payload.child} — ${payload.date}</h4>`;
-        const entries = Object.entries(payload.log || {});
-        if (!entries.length) html += '<p class="hint">В отчёте нет данных.</p>';
-        entries.forEach(([id, rec]) => {
-          const subj = App.lesson.subjects.find(s => s.id === id);
-          const name = subj ? subj.name : id;
-          html += `<div class="report-subject ${rec.errors.length ? '' : 'clean'}"><h4>${name} — ${rec.correct} из ${rec.total} верно</h4>`;
-          if (!rec.errors.length) html += '<div class="error-item"><span class="right">✅ Ошибок нет</span></div>';
-          rec.errors.forEach(e => {
-            html += `<div class="error-item"><div>❓ ${e.q}</div>
-              <div><span class="wrong">Ответ: ${e.given}</span> · <span class="right">Правильно: ${e.answer}</span></div>
-              <div class="why">💡 ${e.why}</div></div>`;
-          });
-          html += '</div>';
+        const errors = Report.decode(document.getElementById('reportInput').value);
+        let html = `<div class="report-subject"><h4>Найдено ошибок: ${errors.length}</h4>`;
+        if (!errors.length) html += '<p class="hint">Ошибок нет — всё верно!</p>';
+        errors.forEach(e => {
+          html += `<div class="report-subject"><h4>${e.subject}</h4>
+            <div class="error-item"><div>❓ ${e.q}</div>
+            <div><span class="wrong">Ответ: ${e.given}</span> · <span class="right">Правильно: ${e.answer}</span></div>
+            <div class="why">💡 ${e.why}</div></div></div>`;
         });
-        html += '</div>';
-        out.innerHTML = html;
+        out.innerHTML = html + '</div>';
       } catch (e) {
-        out.innerHTML = `<div class="report-subject"><span class="wrong">Не удалось прочитать код: ${e.message}</span></div>`;
+        out.innerHTML = `<div class="report-subject"><span class="wrong">Ошибка: ${e.message}</span></div>`;
       }
     };
   }
 };
 
 const Game = {
-  subject: null, questions: [], index: 0, stars: 0, correctAnswers: 0, errors: [],
-  mathTotal: 0, mathIndex: 0, mathCurrent: null, wordIndex: 0,
+  subject: null, questions: [], index: 0, stars: 0, correctAnswers: 0, items: [],
+  mathTotal: 0, mathIndex: 0, mathCurrent: null, mathExpr: '', wordIndex: 0,
   open(subject) {
     this.subject = subject;
-    this.index = 0; this.stars = 0; this.correctAnswers = 0; this.errors = [];
+    this.index = 0; this.stars = 0; this.correctAnswers = 0; this.items = [];
     document.getElementById('subjects').classList.add('hidden');
     document.querySelector('.hero').classList.add('hidden');
     document.getElementById('journal').classList.add('hidden');
-    document.querySelector('.journal.parent').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
     document.getElementById('gameTitle').textContent = `${subject.emoji} ${subject.name}`;
     document.getElementById('gameHint').textContent = subject.hint;
@@ -171,7 +256,6 @@ const Game = {
     document.getElementById('subjects').classList.remove('hidden');
     document.querySelector('.hero').classList.remove('hidden');
     document.getElementById('journal').classList.remove('hidden');
-    document.querySelector('.journal.parent').classList.remove('hidden');
   },
   showQuizQuestion() {
     const body = document.getElementById('gameBody');
@@ -185,8 +269,7 @@ const Game = {
     const box = document.getElementById('options');
     q.options.forEach((opt, i) => {
       const b = document.createElement('button');
-      b.className = 'option';
-      b.textContent = opt;
+      b.className = 'option'; b.textContent = opt;
       b.onclick = () => this.answerQuiz(i, q, b);
       box.appendChild(b);
     });
@@ -197,7 +280,7 @@ const Game = {
     button.classList.add(correct ? 'correct' : 'wrong');
     const fb = document.getElementById('feedback');
     if (correct) { this.stars++; this.correctAnswers++; }
-    else this.errors.push({ q: q.q, given: q.options[i], answer: q.options[q.answer], why: q.why });
+    else this.items.push({ i: this.index, given: i });
     fb.innerHTML = `<div class="explain">${correct ? '✅ Верно! ' : '❌ Неверно. '}${q.why}</div>
       <button class="next" id="nextBtn">${this.index + 1 >= this.questions.length ? 'Завершить' : 'Следующий вопрос →'}</button>`;
     document.getElementById('nextBtn').onclick = () => { this.index++; this.showQuizQuestion(); };
@@ -213,10 +296,11 @@ const Game = {
     if (op === '×') { a = 2 + Math.floor(Math.random() * 8); b = 2 + Math.floor(Math.random() * 8); answer = a * b; }
     if (op === '÷') { b = 2 + Math.floor(Math.random() * 8); answer = 2 + Math.floor(Math.random() * 8); a = b * answer; }
     this.mathCurrent = answer;
-    const prompt = `${a} ${op} ${b}`;
+    const opCode = op === '×' ? 'x' : op;
+    this.mathExpr = `${a}${opCode}${b}`;
     body.innerHTML = `
       <div class="q-counter">Пример ${this.mathIndex + 1} из ${this.mathTotal}</div>
-      <div class="math-line">${prompt} = ?</div>
+      <div class="math-line">${a} ${op} ${b} = ?</div>
       <div style="text-align:center">
         <input class="answer-input" id="mathAnswer" type="number" inputmode="numeric" placeholder="?" autofocus>
         <button class="next" id="checkBtn">Проверить</button>
@@ -226,7 +310,7 @@ const Game = {
       const val = parseInt(document.getElementById('mathAnswer').value, 10);
       const ok = val === this.mathCurrent;
       if (ok) { this.stars++; this.correctAnswers++; }
-      else this.errors.push({ q: prompt, given: isNaN(val) ? 'нет ответа' : String(val), answer: String(this.mathCurrent), why: 'Посчитай ещё раз внимательно — проверь знак и перенос.' });
+      else this.items.push({ q: this.mathExpr, given: isNaN(val) ? '?' : String(val) });
       const fb = document.getElementById('feedback');
       fb.innerHTML = `<div class="explain">${ok ? '✅ Верно! Молодец!' : '❌ Неверно. Правильный ответ: ' + this.mathCurrent}</div>
         <button class="next" id="nextBtn">${this.mathIndex + 1 >= this.mathTotal ? 'Завершить' : 'Следующий пример →'}</button>`;
@@ -254,7 +338,7 @@ const Game = {
       const fb = document.getElementById('feedback');
       fb.innerHTML = `<div class="explain">📖 ${showRu ? w.en + ' = ' + w.ru : w.ru + ' = ' + w.en}</div>
         <button class="next" id="nextBtn">Я запомнил(а) →</button>`;
-      this.stars++;
+      this.stars++; this.correctAnswers++;
       document.getElementById('nextBtn').onclick = () => {
         this.wordIndex++;
         if (this.wordIndex >= words.length * 2) this.showResult();
@@ -267,14 +351,14 @@ const Game = {
     const total = this.subject.game === 'quiz' ? this.questions.length
       : this.subject.game === 'math' ? this.mathTotal : this.subject.words.length * 2;
     const stars = Math.min(5, Math.max(1, Math.round((this.stars / total) * 5)));
-    App.finish(this.subject, stars, this.errors, this.correctAnswers, total);
+    App.finish(this.subject, stars, this.items, this.subject.game, this.correctAnswers, total);
     body.innerHTML = `
       <div class="result">
         <div class="big">🎉</div>
         <h2>Отлично поработал!</h2>
         <p>Правильных ответов: ${this.correctAnswers} из ${total}</p>
         <p>Звёздочек за задание: ${'⭐'.repeat(stars)}</p>
-        ${this.errors.length ? `<p class="hint">Ошибок: ${this.errors.length}. Посмотри журнал ошибок ниже — там всё разобрано.</p>` : ''}
+        ${this.items.length ? `<p class="hint">Ошибок: ${this.items.length}. Посмотри журнал ошибок.</p>` : ''}
         <button class="next" onclick="Game.close()">К другим предметам</button>
       </div>`;
   }
