@@ -1,0 +1,7 @@
+0000000000000000000000000000000000000000 2ad598f20985773bbbc921b1ed22371b599da713 domovoy-export <domovoy@local> 1794981330 +0000	commit (initial): Initial export: domovoy agents and skills
+2ad598f20985773bbbc921b1ed22371b599da713 0000000000000000000000000000000000000000 root <root@localhost.(none)> 1794982444 +0000	Branch: renamed refs/heads/master to refs/heads/main
+0000000000000000000000000000000000000000 2ad598f20985773bbbc921b1ed22371b599da713 root <root@localhost.(none)> 1794982444 +0000	Branch: renamed refs/heads/master to refs/heads/main
+2ad598f20985773bbbc921b1ed22371b599da713 6f3c9c400eb56e27dec5c074e3d1741f5a9d3bea domovoy-export <domovoy@local> 1794991031 +0000	commit: docs: professionalize repository (README, LICENSE, security, contributing, templates)
+6f3c9c400eb56e27dec5c074e3d1741f5a9d3bea 1fceddb075d8728a9753c6721b47d80d0e232ac7 Domovoy <domovoy@local> 1795030372 +0000	commit: feat: add missing skills (android-apk-build, vpn-bypass, windows-exe-build, xray-openwrt)
+1fceddb075d8728a9753c6721b47d80d0e232ac7 0000000000000000000000000000000000000000 root <root@localhost.(none)> 1795030661 +0000	Branch: renamed refs/heads/main to refs/heads/main
+1fceddb075d8728a9753c6721b47d80d0e232ac7 1fceddb075d8728a9753c6721b47d80d0e232ac7 root <root@localhost.(none)> 1795030661 +0000	Branch: renamed refs/heads/main to refs/heads/main

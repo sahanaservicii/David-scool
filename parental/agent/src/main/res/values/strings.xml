@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HomeGuard Агент</string>
+    <string name="a11y_desc">Помогает закрывать приложения из запрещённого списка и удерживать экран блокировки. Используется только по политике родителя.</string>
+</resources>

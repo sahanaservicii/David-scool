@@ -1,0 +1,260 @@
+{
+  "active_location": "apartment",
+  "network": "192.168.0.0/24",
+  "gateway": "192.168.0.1",
+  "location_note": "Квартира: подсети 192.168.0.0/24 и 192.168.1.0/24. Дача — отдельная третья сеть, её адрес пользователем не назван [НЕИЗВЕСТНО]. Хост sahanovschi.v6.rocks и аудит 19.11 (SSID RT-WIFI-47/RT-GUEST) относятся к даче. Одинаковое имя RT-WIFI-47 в квартире и на даче — разные сети, не путать.",
+  "router": {
+    "host": "192.168.0.1",
+    "kind": "router-gateway",
+    "note": "Квартирный шлюз 192.168.0.1 продолжает не отвечать по TCP, SSH timeout. Wi-Fi в 192.168.1.0/24 раздают два роутера: Innbox 192.168.1.1 (SSID RT-WIFI-47) и dom.ru-роутер (SSID sahanovschi, его IP/хост не установлены). Хост sahanovschi.v6.rocks — дачный OpenWrt AX3600, к квартире не относится."
+  },
+  "home_assistant": {
+    "enabled": false,
+    "note": "Home Assistant относится к даче (отдельная сеть, адрес не назван). enabled=false — не настраивать и не проверять без отдельного подтверждения."
+  },
+  "android": [],
+  "cameras": [],
+  "other": [
+    {
+      "name": "apartment-gateway",
+      "host": "192.168.0.1",
+      "kind": "gateway",
+      "location": "apartment",
+      "note": "Шлюз/DNS квартирной сети 192.168.0.0/24. Подтверждён сканом 2026-11-21 (TCP 53,80,443)."
+    },
+    {
+      "name": "cast-bedroom-12",
+      "host": "192.168.0.12",
+      "kind": "tv",
+      "location": "apartment",
+      "note": "Квартира: ТВ Harper + Chromecast/Apollo Premium2K TV (Expressluck), friendlyName 'Спальня'; порты 8008/8009/8443 (из прежних данных). В скане 2026-11-21 не обнаружен (возможно выключен/спит)."
+    },
+    {
+      "name": "lg-webos-17",
+      "host": "192.168.0.17",
+      "kind": "tv",
+      "location": "apartment",
+      "note": "Квартира: LG webOS TV LJ480U, порты 3000/1645/1900, DLNA (из прежних данных). В скане 2026-11-21 не обнаружен (возможно выключен/спит)."
+    },
+    {
+      "name": "observed-192.168.1.27",
+      "host": "192.168.1.27",
+      "kind": "unknown",
+      "location": "apartment",
+      "note": "Ранее наблюдался 2026-11-21: TCP 53,80,443, веб Boa/0.93.15 → /admin/login.asp. По уточнению пользователя 2026-11-22 подсеть 192.168.1.0/24 квартирная; в скане 2026-11-22 не проявился — статус [ПРОВЕРИТЬ]."
+    },
+    {
+      "name": "apartment-innbox-gateway",
+      "host": "192.168.1.1",
+      "kind": "gateway",
+      "location": "apartment",
+      "note": "Квартирный роутер Innbox G84: TCP 53/80/443, Server Innbox_webserv, hostname InnboxG84. По уточнению пользователя 2026-11-22 раздаёт Wi-Fi RT-WIFI-47. SSID на веб-странице не найден."
+    },
+    {
+      "name": "audit-host-local",
+      "host": "192.168.1.17",
+      "kind": "host",
+      "location": "apartment",
+      "note": "Локальный адрес хоста проверки 2026-11-22: 192.168.1.17 (doctor: «Локальный адрес для 192.168.0.1: 192.168.1.17»)."
+    },
+    {
+      "name": "observed-192.168.1.201",
+      "host": "192.168.1.201",
+      "kind": "unknown",
+      "location": "apartment",
+      "note": "Квартирная подсеть. Обнаружен в скане 2026-11-22 только на TCP 9000; повтор — Timeout / No route to host. Что это — [ПРОВЕРИТЬ]."
+    },
+    {
+      "name": "apartment-domru-router",
+      "host": "?",
+      "kind": "router",
+      "location": "apartment",
+      "note": "Квартирный dom.ru-роутер с Wi-Fi SSID sahanovschi (по уточнению пользователя 2026-11-22). Его LAN-IP и хост не установлены [НЕИЗВЕСТНО]; это НЕ sahanovschi.v6.rocks — тот хост относится к даче."
+    }
+  ],
+  "locations": {
+    "apartment": {
+      "network": "192.168.0.0/24",
+      "gateway": "192.168.0.1",
+      "ssid_hint": "Wi-Fi в квартире по уточнению пользователя 2026-11-22: RT-WIFI-47 — Innbox (192.168.1.1), sahanovschi — dom.ru-роутер (IP/хост не известны). Оба SSID — со слов пользователя, эфир не измерен. Дачный аудит 19.11 тоже содержал RT-WIFI-47 и RT-GUEST — это другая сеть, не путать.",
+      "confirmed_devices": [
+        "192.168.0.1",
+        "192.168.0.12",
+        "192.168.0.17",
+        "192.168.1.1",
+        "192.168.1.17",
+        "192.168.1.27",
+        "192.168.1.201"
+      ],
+      "additional_networks": [
+        {
+          "network": "192.168.1.0/24",
+          "gateway": "192.168.1.1",
+          "note": "Вторая квартирная подсеть по уточнению пользователя 2026-11-22; шлюз Innbox G84 жив по TCP 53/80/443."
+        }
+      ],
+      "routers": [
+        {
+          "name": "apartment-innbox",
+          "host": "192.168.1.1",
+          "ssid": "RT-WIFI-47",
+          "note": "Innbox G84, жив по TCP 53/80/443; SSID — по словам пользователя, не по эфиру."
+        },
+        {
+          "name": "apartment-domru",
+          "host": "?",
+          "ssid": "sahanovschi",
+          "note": "dom.ru-роутер в квартире; IP/хост не установлены; SSID sahanovschi — по словам пользователя."
+        }
+      ]
+    },
+    "dacha": {
+      "network": "192.168.1.0/24",
+      "gateway": "192.168.1.1",
+      "note": "Дача — отдельная третья сеть, адрес пользователем не назван [НЕИЗВЕСТНО]. Здесь OpenWrt AX3600 (sahanovschi.v6.rocks), Home Assistant, камеры/NVR и другие приборы. Исторический аудит 19.11 с SSID RT-WIFI-47/RT-GUEST — дачный; одноимённый RT-WIFI-47 у квартирного Innbox — другая сеть. Прежние адреса 192.168.1.x дачных устройств конфликтуют с квартирной подсетью и требуют уточнения.",
+      "router": {
+        "host": "sahanovschi.v6.rocks",
+        "user": "root",
+        "port": 22,
+        "kind": "openwrt",
+        "identity": "~/.ssh/id_ed25519",
+        "note": "Дачный OpenWrt AX3600 (Rahmaninova-49), хост sahanovschi.v6.rocks; источник аудита 19.11 с SSID RT-WIFI-47/RT-GUEST. По уточнению пользователя 2026-11-22 хост и аудит — дачные; квартирный dom.ru-роутер имеет тот же SSID sahanovschi, но другой, неизвестный хост. Текущая доступность по SSH не проверялась."
+      },
+      "home_assistant": {
+        "host": "192.168.1.156",
+        "url": "http://192.168.1.156:8123",
+        "kind": "home-assistant",
+        "enabled": true,
+        "note": "Home Assistant на даче, в отдельной сети (адрес не назван). Ранее указан как 192.168.1.156 — этот адрес конфликтует с квартирной подсетью и требует уточнения. enabled=false; не настраивать и не проверять без подтверждения."
+      },
+      "android": [
+        {
+          "name": "tv",
+          "host": "192.168.1.139",
+          "port": 5555,
+          "kind": "android-tv",
+          "note": "Дача (адрес сети уточняется): Xiaomi Google ADT-3, Android TV 14; сетевой ADB держать выключенным."
+        },
+        {
+          "name": "phone",
+          "host": "192.168.1.155",
+          "port": 5555,
+          "kind": "android-phone",
+          "note": "POCO (устройство пользователя) — ранее в дачном инвентаре 192.168.1.155; фактический IP зависит от текущей сети."
+        }
+      ],
+      "cameras": [
+        {
+          "name": "cam-10",
+          "host": "192.168.1.10",
+          "kind": "xm-camera",
+          "note": "Дача (адрес сети уточняется): XMEye, HTTP+RTSP+34567"
+        },
+        {
+          "name": "cam-93",
+          "host": "192.168.1.93",
+          "kind": "xm-camera",
+          "note": "Дача (адрес сети уточняется): JF-вариант XM"
+        },
+        {
+          "name": "cam-135",
+          "host": "192.168.1.135",
+          "kind": "xm-camera",
+          "note": "Дача (адрес сети уточняется): XMEye"
+        },
+        {
+          "name": "nvr-190",
+          "host": "192.168.1.190",
+          "kind": "nvr",
+          "note": "Дача (адрес сети уточняется): Topsvision reg.lan"
+        },
+        {
+          "name": "cam-206",
+          "host": "192.168.1.206",
+          "kind": "xm-camera",
+          "note": "Дача (адрес сети уточняется): JF-вариант XM"
+        }
+      ],
+      "other": [
+        {
+          "name": "repeater-223",
+          "host": "192.168.1.223",
+          "kind": "wifi-repeater",
+          "note": "Дача (адрес сети уточняется): Wavlink WN570HA1B"
+        },
+        {
+          "name": "midea-ac",
+          "host": "192.168.1.136",
+          "kind": "air-conditioner",
+          "note": "Дача (адрес сети уточняется): midea_e1_0523"
+        },
+        {
+          "name": "yeelight-120",
+          "host": "192.168.1.120",
+          "kind": "light",
+          "note": "Дача (адрес сети уточняется): yeelink-light-colorb"
+        },
+        {
+          "name": "yeelight-237",
+          "host": "192.168.1.237",
+          "kind": "light",
+          "note": "Дача (адрес сети уточняется): yeelink-light-colorb"
+        },
+        {
+          "name": "desktop-239",
+          "host": "192.168.1.239",
+          "kind": "pc",
+          "note": "Дача (адрес сети уточняется): DESKTOP-DV7IDOM"
+        },
+        {
+          "name": "honor-138",
+          "host": "192.168.1.138",
+          "kind": "android-phone",
+          "note": "Дача (адрес сети уточняется): HONOR-X5c-Plus"
+        },
+        {
+          "name": "realme-241",
+          "host": "192.168.1.241",
+          "kind": "android-phone",
+          "note": "Дача (адрес сети уточняется): realme-10"
+        },
+        {
+          "name": "salute-tv-221",
+          "host": "192.168.1.221",
+          "kind": "tv",
+          "note": "Дача (адрес сети уточняется): SaluteTV"
+        },
+        {
+          "name": "miwifi-177",
+          "host": "192.168.1.177",
+          "kind": "router",
+          "note": "Дача (адрес сети уточняется): miwifi-rd10m"
+        },
+        {
+          "name": "isp-gateway-1",
+          "host": "192.168.1.1",
+          "kind": "gateway",
+          "note": "Историческая запись ISP-шлюза Innbox G84. Сейчас Innbox 192.168.1.1 — квартирный роутер, см. other.apartment-innbox-gateway; старую запись к дачной сети не применять."
+        },
+        {
+          "name": "topsvision-reg-191",
+          "host": "192.168.1.191",
+          "kind": "nvr",
+          "note": "Дача (адрес сети уточняется): Topsvision, порты 80/554/34567."
+        }
+      ],
+      "proxy": {
+        "kind": "xray-transparent",
+        "config": "/etc/xray/config.json",
+        "note": "Сохранено из прежней (дачной) конфигурации OpenWrt; актуальность для квартиры не подтверждена."
+      }
+    }
+  },
+  "meta": {
+    "corrected_at": "2026-11-22",
+    "reason": "Пользователь уточнил: SSID RT-WIFI-47/RT-GUEST из исторического аудита 19.11 и хост sahanovschi.v6.rocks находятся на даче (отдельная третья сеть, адрес не назван). В квартире остаются два роутера: Innbox (RT-WIFI-47) и dom.ru (sahanovschi, IP/хост не установлены). Квартирный dom.ru больше не отождествляется с дачным хостом."
+  },
+  "additional_networks": [
+    "192.168.1.0/24"
+  ]
+}

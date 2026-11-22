@@ -1,0 +1,8 @@
+Proto,Port,Direction,Description
+TCP,443,outbound,HTTPS API / веб-интерфейс / обновления
+TCP,80,outbound,HTTP (редирект/служебные запросы)
+TCP,554,outbound,RTSP видеопоток
+TCP,8000,outbound,Сервисный/управляющий порт устройства (пример)
+UDP,123,outbound,NTP синхронизация времени
+UDP,3702,outbound,WS-Discovery (если используется)
+TCP,8883,outbound,MQTT over TLS (если используется)

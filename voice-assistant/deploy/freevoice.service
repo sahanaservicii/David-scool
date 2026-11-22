@@ -1,0 +1,33 @@
+[Unit]
+Description=FreeVoice (Свободный Голос) local voice assistant server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=freevoice
+Group=freevoice
+WorkingDirectory=/opt/freevoice
+# Prefer config.local.json for production settings
+ExecStart=/usr/bin/python3 /opt/freevoice/main.py --web --host 0.0.0.0 --port 8765
+Restart=on-failure
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+# Optional env overrides:
+# Environment=ASSISTANT_HOST=0.0.0.0
+# Environment=ASSISTANT_PORT=8765
+# Environment=HASS_URL=http://homeassistant.local:8123
+# Environment=HASS_TOKEN=...
+# Environment=LLM_BASE_URL=http://127.0.0.1:11434/v1
+
+# Hardening (adjust to your environment)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/freevoice/data /opt/freevoice/logs
+# If using homelab secrets outside WorkingDirectory, allow read access explicitly:
+# ReadOnlyPaths=/home/freevoice/.config/opencode/secrets
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "network": "192.168.1.0/24",
+  "safety": {
+    "dry_run_default": true,
+    "allow_shell": true,
+    "max_read_bytes": 400000,
+    "shell_timeout": 15
+  },
+  "llm": {
+    "enabled": true,
+    "url": "http://127.0.0.1:8080/v1",
+    "fallback_urls": [
+      "http://127.0.0.1:11434/v1"
+    ],
+    "model": "local",
+    "timeout": 90
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8765,
+    "token": "LiKSF592wo-krnPc3DXlPVY2YZPHb2ws"
+  },
+  "notify": {
+    "enabled": false
+  }
+}

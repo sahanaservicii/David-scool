@@ -1,0 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[user]
+	email = freevoice@local
+	name = FreeVoice
+[remote "origin"]
+	url = git@github.com:sahanaservicii/freevoice-assistant.git
+	fetch = +refs/heads/*:refs/remotes/origin/*

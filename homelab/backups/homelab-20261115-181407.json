@@ -1,0 +1,10 @@
+{
+  "created": "2026-11-15 18:14:07",
+  "files": [
+    "homelab.json",
+    "README.md"
+  ],
+  "router": null,
+  "ha": null,
+  "sha256": "6a4c5a30302c9a2be7b36f63ec2e569c918161e591ad5e45388a7545fa5bffaf"
+}

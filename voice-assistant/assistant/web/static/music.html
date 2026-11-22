@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Свободный Голос — Музыкальный терминал</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Музыкальный терминал</h1>
+        <p class="sub">Комнаты, плееры, радио и архив (Home Assistant / Music Assistant). <a class="link" href="/">← Чат</a></p>
+      </div>
+      <div class="status" id="status">Загрузка…</div>
+    </header>
+
+    <main>
+      <section class="controls">
+        <div class="toolbar">
+          <button id="refreshBtn" class="primary">Обновить состояние</button>
+          <label class="toggle">Комната:
+            <select id="roomSelect" class="select"></select>
+          </label>
+          <span class="hint-inline" id="haHint"></span>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:1;min-width:220px">
+            <label class="small muted">Радио / пресет</label>
+            <select id="radioSelect"><option value="">— выбрать радио —</option></select>
+          </div>
+          <div class="field" style="flex:1;min-width:220px">
+            <label class="small muted">Архив / плейлист / пресет</label>
+            <select id="archiveSelect"><option value="">— выбрать из архива —</option></select>
+          </div>
+        </div>
+        <div class="row input-row">
+          <input id="mediaInput" type="text" placeholder="URL потока, media_content_id или запрос (для HA/MA)" />
+          <select id="mediaType" class="select" title="Тип контента">
+            <option value="music">music</option>
+            <option value="playlist">playlist</option>
+            <option value="track">track</option>
+            <option value="album">album</option>
+            <option value="artist">artist</option>
+            <option value="channel">channel/radio</option>
+          </select>
+          <button id="playBtn" class="primary">▶ Включить</button>
+        </div>
+        <div class="controls-grid">
+          <button data-action="play">▶ Play</button>
+          <button data-action="pause">⏸ Пауза</button>
+          <button data-action="stop">⏹ Стоп</button>
+          <button data-action="previous">⏮ Пред.</button>
+          <button data-action="next">⏭ След.</button>
+          <button data-action="volume_down">🔉 Тише</button>
+          <button data-action="volume_up">🔊 Громче</button>
+          <input id="volInput" type="number" min="0" max="100" step="5" value="30" style="width:90px" title="Громкость %" />
+          <button id="setVolBtn">Установить %</button>
+        </div>
+        <div class="hint" id="hint">Терминал управляет media_player комнат через Home Assistant. Если плеер/HA не настроены, здесь будет показано, что нужно настроить. Для локального архива/радио рекомендуется Music Assistant в HA (см. config/config.local.json: music.*, rooms[].media_player, presets).</div>
+      </section>
+
+      <section style="margin-top:12px">
+        <h2 style="margin:0 0 8px;font-size:1.1rem">Комнаты и воспроизведение</h2>
+        <div id="rooms" class="grid"></div>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>Конфигурация музыки (presets) и состояние</summary>
+          <pre id="debug"></pre>
+        </details>
+      </section>
+    </main>
+  </div>
+  <script src="/music.js"></script>
+</body>
+</html>

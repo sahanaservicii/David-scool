@@ -1,0 +1,40 @@
+{
+  "source": "inbox/Screenshot_2026-11-20-22-00-50-609_ru.tinkoff.investing.jpg",
+  "extracted": "2026-11-20",
+  "method": "tesseract rus+eng, psm 3/4/6/11, upscale x2-x4, autocontrast; визуальный ввод моделью недоступен",
+  "confidence": "средняя: шапка и 3 позиции распознаны стабильно в нескольких режимах; 4-я строка внизу не распознана",
+  "header": {
+    "portfolio_value_usd": 1151.21,
+    "portfolio_value_usd_alt": 1151.01,
+    "profit_usd": -374.67,
+    "profit_usd_alt": -374.69,
+    "total_return_pct": -24.55,
+    "total_return_pct_alt": -24.56,
+    "note": "два почти одинаковых значения на экране (разница 0.20 $ / 0.01 п.п.) — вероятно обновление данных между кадрами"
+  },
+  "positions": [
+    {"name": "Банк ВТБ", "value_rub": 26238.4, "qty": 467, "price_rub": 56.185, "profit_rub": -25376.11, "return_pct": -49.16, "weight_pct": 28.43},
+    {"name": "РусГидро", "value_rub": 61716.0, "qty": 111000, "price_rub": 0.556, "profit_rub": -15797.08, "return_pct": -20.38, "weight_pct": 66.87},
+    {"name": "Совкомбанк", "value_rub": 4344.0, "qty": 400, "price_rub": 10.86, "profit_rub": -1560.5, "return_pct": -26.43, "weight_pct": 4.71}
+  ],
+  "unrecognized_bottom_row": "ещё одна строка позиции под Совкомбанком, OCR не прочитал (возможно '...паи...'); не выдумывалась",
+  "computed": {
+    "positions_value_rub": 92298.4,
+    "positions_loss_rub": 42733.69,
+    "invested_by_positions_rub": 135032.09,
+    "weighted_return_pct": -28.85,
+    "implied_usd_rub_rate": 80.18,
+    "header_profit_check_pct": -24.55,
+    "invested_by_header_rub": 122337.61,
+    "invested_mismatch_rub": -12694.48,
+    "arithmetic_checks": {
+      "ВТБ": "467 × 56.185 = 26238.395",
+      "РусГидро": "111000 × 0.556 = 61716",
+      "Совкомбанк": "400 × 10.86 = 4344"
+    }
+  },
+  "warnings": [
+    "несовпадение вложено по позициям (135032 Р) и по шапке (122338 Р) на ~12694 Р — возможны выводы средств, иная валюта покупки или курсовая разница; без истории операций не объяснить",
+    "скриншот содержит финансовые данные — файл локальный, в сеть не отправлялся"
+  ]
+}

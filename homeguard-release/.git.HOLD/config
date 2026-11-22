@@ -1,0 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[user]
+	name = HomeGuard Release
+	email = release@homeguard.local
+[remote "origin"]
+	url = https://github.com/sahanaservicii/Guard-.git
+	fetch = +refs/heads/*:refs/remotes/origin/*

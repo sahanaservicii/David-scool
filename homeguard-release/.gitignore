@@ -1,0 +1,20 @@
+# Local toolchain and signing material — never commit.
+local.properties
+keystore.properties
+keystore.jks
+*.jks
+*.keystore
+secrets.env
+
+# Build output
+.gradle/
+build/
+*.class
+*.log
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+
+# Ready APKs in dist/ ARE versioned on purpose.

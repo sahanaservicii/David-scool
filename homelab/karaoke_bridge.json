@@ -1,0 +1,12 @@
+{
+  "watch_dir": "/root/workspace/inbox",
+  "trigger_file": "karaoke.play",
+  "video_patterns": ["*.mp4", "*.mkv", "*.webm", "*.avi", "*.mov"],
+  "min_video_bytes": 1048576,
+  "http_port": 8766,
+  "bind": "0.0.0.0",
+  "probe_host": "192.168.0.1",
+  "notify": true,
+  "play_cmd": "",
+  "poll_seconds": 2.0
+}

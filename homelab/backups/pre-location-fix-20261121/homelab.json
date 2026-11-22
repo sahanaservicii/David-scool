@@ -1,0 +1,167 @@
+{
+ "network": "192.168.1.0/24",
+ "gateway": "192.168.1.1",
+ "router": {
+  "host": "sahanovschi.v6.rocks",
+  "user": "root",
+  "port": 22,
+  "kind": "openwrt",
+  "identity": "~/.ssh/id_ed25519",
+  "note": "OpenWrt 25.12.5 (Rahmaninova-49, AX3600); доступ по ключу через WAN/DDNS. LAN 192.168.1.1 — но из этой среды 192.168.1.1 отвечает ISP-шлюз Innbox G84"
+ },
+ "home_assistant": {
+  "host": "192.168.1.156",
+  "url": "http://192.168.1.156:8123",
+  "kind": "home-assistant",
+  "enabled": true,
+  "note": "ARP/DHCP 17.11.2026: хост homeassistant на 192.168.1.156; старый .127 неактивен. Нуж валидный HASS_TOKEN"
+ },
+ "android": [
+  {
+   "name": "tv",
+   "host": "192.168.1.139",
+   "port": 5555,
+   "kind": "android-tv",
+   "note": "Xiaomi, Google ADT-3, Android TV 14; сетевой ADB держать выключенным, включать только на время работ. По состоянию на 20.11.2026 офлайн: ping 100% потерь, ARP INCOMPLETE, DHCP-аренда bc:35:1e:4c:48:7e"
+  },
+  {
+   "name": "phone",
+   "host": "192.168.1.155",
+   "port": 5555,
+   "kind": "android-phone",
+   "note": "POCO (этот телефон); управление через локальный мост android-device, ADB обычно выключен"
+  }
+ ],
+ "cameras": [
+  {
+   "name": "cam-10",
+   "host": "192.168.1.10",
+   "kind": "xm-camera",
+   "note": "XMEye, HTTP+RTSP+34567"
+  },
+  {
+   "name": "cam-93",
+   "host": "192.168.1.93",
+   "kind": "xm-camera",
+   "note": "JF-вариант XM"
+  },
+  {
+   "name": "cam-135",
+   "host": "192.168.1.135",
+   "kind": "xm-camera",
+   "note": "XMEye"
+  },
+  {
+   "name": "nvr-190",
+   "host": "192.168.1.190",
+   "kind": "nvr",
+   "note": "Topsvision reg.lan"
+  },
+  {
+   "name": "cam-206",
+   "host": "192.168.1.206",
+   "kind": "xm-camera",
+   "note": "JF-вариант XM"
+  }
+ ],
+ "other": [
+  {
+   "name": "repeater-223",
+   "host": "192.168.1.223",
+   "kind": "wifi-repeater",
+   "note": "Wavlink WN570HA1B, remote/UPnP/DMZ выключены"
+  },
+  {
+   "name": "midea-ac",
+   "host": "192.168.1.136",
+   "kind": "air-conditioner",
+   "note": "midea_e1_0523"
+  },
+  {
+   "name": "yeelight-120",
+   "host": "192.168.1.120",
+   "kind": "light",
+   "note": "yeelink-light-colorb"
+  },
+  {
+   "name": "yeelight-237",
+   "host": "192.168.1.237",
+   "kind": "light",
+   "note": "yeelink-light-colorb"
+  },
+  {
+   "name": "desktop-239",
+   "host": "192.168.1.239",
+   "kind": "pc",
+   "note": "DESKTOP-DV7IDOM"
+  },
+  {
+   "name": "honor-138",
+   "host": "192.168.1.138",
+   "kind": "android-phone",
+   "note": "HONOR-X5c-Plus"
+  },
+  {
+   "name": "realme-241",
+   "host": "192.168.1.241",
+   "kind": "android-phone",
+   "note": "realme-10"
+  },
+  {
+   "name": "salute-tv-221",
+   "host": "192.168.1.221",
+   "kind": "tv",
+   "note": "SaluteTV"
+  },
+  {
+   "name": "miwifi-177",
+   "host": "192.168.1.177",
+   "kind": "router",
+   "note": "miwifi-rd10m"
+  },
+  {
+   "name": "isp-gateway-1",
+   "host": "192.168.1.1",
+   "kind": "gateway",
+   "note": "ISP-шлюз Innbox G84, не наш роутер; открыто 22/53/80/443. Не трогать без уточнения у провайдера"
+  },
+  {
+   "name": "topsvision-reg-191",
+   "host": "192.168.1.191",
+   "kind": "nvr",
+   "note": "MAC c8:22:02:59:c6:0f, DHCP hostname reg. Порты 80/554/34567; HTTP APPWebs/, RTSP 'Topsvision Server v2.1'. Второй Topsvision-бокс помимо nvr-190. С 20.11.2026 закрыт выход в WAN правилом firewall Block-Cam191-WAN"
+  },
+  {
+   "name": "cast-bedroom-12",
+   "host": "192.168.0.12",
+   "kind": "tv",
+   "note": "Домашняя сеть квартиры 192.168.0.0/24. Физический ТВ Harper, к нему подключён Chromecast/1.6.18-стик Apollo Premium2K TV (Expressluck), friendlyName 'Спальня'; порты 8008/8009/8443; UDN uuid:3d0b11c4-1e8d-5b2d-4c2d-ab9a3e37d64d"
+  },
+  {
+   "name": "lg-webos-17",
+   "host": "192.168.0.17",
+   "kind": "tv",
+   "note": "Домашняя сеть квартиры 192.168.0.0/24. ТВ LG webOS TV LJ480U (LG Electronics), порты 3000/1645/1900, DLNA/MediaRenderer; UDN uuid:222aa65a-2a65-a6bb-7f35-8a8efc956bf8"
+  }
+ ],
+ "proxy": {
+  "kind": "xray-transparent",
+  "config": "/etc/xray/config.json",
+  "ports": {
+   "redir": 12345,
+   "socks_local": 10808
+  },
+  "services": [
+   "/etc/init.d/xray",
+   "/etc/init.d/xray-hc"
+  ],
+  "healthcheck": "/etc/xray/health.sh (60s, MAXFAIL=3 -> режим напрямую)",
+  "routed_via_proxy": [
+   "youtube/*",
+   "facebook.com,fbcdn.net,facebook.net,fb.com,messenger.com,msngr.com,fbsbx.com",
+   "geoip:facebook"
+  ],
+  "upstream": "user.betust.net:443 VLESS+Reality (50.7.169.243) — 18.11.2026 TCP/443 не отвечает",
+  "note": "прозрачная переадресация LAN 192.168.1.0/24 tcp 80,443 -> xray; включается только при живом апстриме"
+ }
+}

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web-отчёт — устройства и открытые порты (перескан)</title>
+<style>
+/* --- Палитра: тёмная база + семантические акценты (контраст в приоритете) --- */
+:root {
+  --bg:#0b1020; --card:#141b2d; --card-alt:#101828; --muted:#0a1120;
+  --text:#f0f5ff; --soft:#b9c8e2; --line:#2b3a5c;
+  --blue:#6db4ff; --cyan:#4dd9d1; --green:#5fe08a; --amber:#ffcf66;
+  --red:#ff8a8a; --violet:#c6a6ff; --pink:#ff9ecd;
+}
+* { box-sizing:border-box; }
+body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+       background:linear-gradient(180deg,#0b1020 0%,#111a30 45%,#0d1425 100%); color:var(--text); line-height:1.5; }
+/* Шапка с цветной полосой */
+header { padding:24px 20px; border-bottom:1px solid var(--line);
+         background:linear-gradient(120deg,#132042,#1a1436 55%,#10243a);
+         border-top:4px solid transparent; border-image:linear-gradient(90deg,var(--blue),var(--cyan),var(--violet),var(--pink)) 1; }
+h1 { margin:0 0 6px; font-size:24px; letter-spacing:.2px; }
+.sub { color:var(--soft); font-size:13px; }
+main { padding:20px; max-width:1200px; margin:0 auto; }
+/* Карточки: каждая со своим акцентом слева */
+.card { background:linear-gradient(180deg,var(--card),var(--card-alt)); border:1px solid var(--line);
+        border-left:4px solid var(--blue); border-radius:14px; padding:16px 18px; margin-bottom:18px;
+        box-shadow:0 6px 22px rgba(0,0,0,.22); }
+.card:nth-of-type(2) { border-left-color:var(--red); }
+.card h2 { margin:0 0 12px; font-size:18px; color:var(--blue); }
+.card:nth-of-type(2) h2 { color:var(--red); }
+.muted { color:var(--soft); font-size:12px; }
+/* Таблицы */
+table { width:100%; border-collapse:collapse; font-size:13px; margin:8px 0 12px; }
+th,td { padding:8px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+thead th { color:#dce8ff; font-weight:600; background:linear-gradient(90deg,#1b2a4a,#172039);
+           border-left:2px solid var(--cyan); }
+thead th:first-child { border-radius:6px 0 0 0; }
+tbody tr:nth-child(even) { background:rgba(109,180,255,.05); }
+tbody tr:hover { background:rgba(77,217,209,.08); }
+code { background:var(--muted); color:#9fe6ff; padding:1px 5px; border-radius:4px; border:1px solid #21304e; }
+/* Бейджи и семантические цвета */
+.badge { display:inline-block; padding:1px 8px; border-radius:999px; font-size:11px; font-weight:700;
+         letter-spacing:.3px; white-space:nowrap; border:1px solid; vertical-align:middle; }
+.badge-info    { color:#bfe0ff; background:#12294a; border-color:#2f6db5; }
+.badge-ok      { color:#9cf3bb; background:#103322; border-color:#2f8f5a; }
+.badge-warn    { color:#ffe3a8; background:#3a2a0f; border-color:#a87320; }
+.badge-danger  { color:#ffc0c0; background:#3d1620; border-color:#b54252; }
+.badge-muted   { color:#c4d2ea; background:#1a2540; border-color:#3a4c73; }
+.badge-violet  { color:#e0ccff; background:#2a1c47; border-color:#7c56c2; }
+.sev-critical,.sev-high { color:#ffc0c0; font-weight:700; }
+.sev-medium { color:#ffe3a8; font-weight:700; }
+.sev-low,.sev-info { color:#9cf3bb; font-weight:700; }
+/* Цитаты */
+blockquote { margin:10px 0; padding:10px 12px; background:linear-gradient(90deg,#12233f,#0f1a30);
+             border-left:4px solid var(--violet); border-radius:0 8px 8px 0; color:var(--soft); }
+blockquote.warn { border-left-color:var(--amber); background:linear-gradient(90deg,#2e2410,#1a1a2c); }
+blockquote.ok   { border-left-color:var(--green); }
+/* Встроенный отчёт */
+#report h1 { font-size:20px; color:var(--violet); }
+#report h2 { font-size:17px; color:var(--cyan); margin:18px 0 8px; padding-left:8px; border-left:3px solid var(--cyan); }
+#report h3 { font-size:15px; color:var(--amber); }
+#report li { margin:4px 0; }
+#report li::marker { color:var(--blue); }
+#report strong { color:#e7f0ff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Web-отчёт: устройства и открытые порты (перескан)</h1>
+  <div class="sub">Сформирован 2026-11-21 13:04:15 · сеть 192.168.1.0/24 · 43 порта · только чтение, без изменений конфигурации</div>
+</header>
+<main>
+  <section class="card">
+    <h2>Найденные устройства (4) <span class="muted">scan: 2026-11-21 13:02:12</span></h2>
+    <div class="muted" style="margin-bottom:8px">Список заменён полностью: старые данные (.75/.77/.254 и 22 устройства из инвентаря) больше не отображаются как найденные. Источник — только свежий TCP-скан.</div>
+    <table><thead><tr><th>IP</th><th>Имя</th><th>Тип / признак</th><th>Открытые порты</th><th>Источник имени</th></tr></thead>
+    <tbody><tr><td><code>192.168.1.1</code></td><td>Неизвестное устройство</td><td>только порт 7000; banner не получен</td><td>7000</td><td class="muted">TCP-скан</td></tr><tr><td><code>192.168.1.75</code></td><td>HP LaserJet MFP M28w</td><td>принтер MFP</td><td>80, 443, 8080, 9100</td><td class="muted">HTTP title</td></tr><tr><td><code>192.168.1.77</code></td><td>Неизвестное устройство</td><td>Express API / WebServer</td><td>8000, 8080</td><td class="muted">HTTP banner</td></tr><tr><td><code>192.168.1.254</code></td><td>mygpon</td><td>шлюз GPON</td><td>53, 80, 443</td><td class="muted">DNS PTR</td></tr></tbody></table>
+  </section>
+  <section class="card">
+    <h2>Проверка доступности шлюза 192.168.1.254 (mygpon)</h2>
+    <div class="muted" style="margin-bottom:8px">Проверено 2026-11-21 14:36:58 · по явному разрешению владельца сети · только чтение, без изменений конфигурации</div>
+    <table><thead><tr><th>Проверка</th><th>Результат</th><th>Деталь</th></tr></thead><tbody>
+    <tr><td>TCP 22 / 53 / 80 / 443</td><td><span class="badge badge-ok">ОТКРЫТЫ</span></td><td>все четыре порта доступны</td></tr>
+    <tr><td>SSH-баннер (22)</td><td><span class="badge badge-info">OpenSSH 6.6</span></td><td>устаревшая версия; предлагает только ssh-rsa / ssh-dss</td></tr>
+    <tr><td>HTTP-панель (80/443)</td><td><span class="badge badge-warn">НЕСТАНДАРТНЫЙ ОТВЕТ</span></td><td>шаблонный «UNKNOWN 400 Bad Request» на все пути (/ , /index.html , /login и др.); заголовки с опечаткой «Prama»</td></tr>
+    <tr><td>Вход в админ-панель</td><td><span class="badge badge-danger">НЕ ВЫПОЛНЕН</span></td><td>одна попытка по SSH — «Permission denied» (метод аутентификации не принят); пароль не подобран, повторов не было</td></tr>
+    <tr><td>Учётные данные</td><td><span class="badge badge-violet">НЕ В ОТЧЁТЕ</span></td><td>переданные креды в отчёт и логи не включены, в чате не повторяются</td></tr>
+    </tbody></table>
+    <blockquote class="warn"><strong>Вывод:</strong> шлюз отвечает на порты, но веб-панель отдаёт нестандартную ошибку, а SSH не принимает переданные данные. Причины могут быть в неверном способе доступа к панели, limitations прошивки GPON или в том, что это не OpenWrt-роутер (команды <code>homelab.py router</code> к нему неприменимы). Дальнейший вход без дополнительных данных владельца не производился — без подбора и без изменений.</blockquote>
+  </section>
+  <section class="card">
+    <h2>Отчёт об уязвимостях</h2>
+    <div id="report"><h1>Отчёт об уязвимостях — сеть друга Вовы (каркас)</h1>
+<ul>
+<li><strong>Дата/время:</strong> 2026-11-21 (локальное время)</li>
+<li><strong>Аудитор:</strong> Домовой (локальная офлайн-среда)</li>
+<li><strong>Статус:</strong> <span class="badge badge-warn">ОЖИДАНИЕ АВТОРИЗАЦИИ И ДОСТУПА</span> — активное сканирование <span class="badge badge-muted">не проводилось</span></li>
+<li><strong>Scope:</strong> сеть «у друга Вовы»; адрес/диапазон, шлюз и способ доступа пользователем <strong>не указаны</strong></li>
+<li><strong>Режим:</strong> <span class="badge badge-info">только чтение/теория</span> без атак, подбора паролей и изменений</li>
+<li><strong>Авторизация:</strong> от владельца сети (Вовы) <span class="badge badge-danger">не получена</span> — зафиксировано по ответу пользователя «это у друга Вовы»</li>
+</ul>
+<h2>0. Почему отчёт пока каркас, а не готовый результат</h2>
+<p>Вы запросили «отчёт + рекомендации» и приоритет «Безопасность, стоп при нет доступа». Факты на входе:</p>
+<ul>
+<li>В <code>homelab.json</code> активная локация — <strong>квартира <code>192.168.0.0/24</code></strong>; дача <code>192.168.1.0/24</code> — архив; «это у друга Вовы» <strong>не совпадает ни с одной подтверждённой локацией</strong>.</li>
+<li>Сети/хоста Вовы нет в инвентаре, адрес не назван — нечего и некого проверять локально.</li>
+<li>По правилам навыка <code>wifi-pentest-audit</code> и роли Домового: чужие сети без явного разрешения владельца не трогаются; при отсутствии авторизации — только теория/симуляция, без активных действий.</li>
+<li>Поэтому: <strong>сканирование, SSH/API-запросы и эксплуатация не выполнялись</strong>. Ниже — структура, которую можно заполнить, и рекомендации, которые Вова может применить сам.</li>
+</ul>
+<blockquote class="warn">Если Вова даст (1) явное разрешение на аудит, (2) адрес сети/шлюза и (3) способ локального доступа — каркас будет заполнен фактическими данными в read-only режиме.</blockquote>
+<h2>1. Цель</h2>
+<p>Выявить уязвимости и слабые настройки сети Вовы и дать приоритетные рекомендации по их устранению — <strong>без нарушения работы сети</strong>.</p>
+<h2>2. Метод и источники данных (планируемые)</h2>
+<table><thead><tr><th>Источник</th><th>Что даёт</th><th>Статус</th></tr></thead><tbody>
+<tr><td><code>homelab.py doctor</code></td><td>доступность шлюза/узлов</td><td><span class="badge badge-muted">НЕ ЗАПУСКАЛСЯ</span> (нет адреса/доступа)</td></tr>
+<tr><td><code>homelab.py inventory</code> / <code>scan</code></td><td>известные и новые устройства</td><td><span class="badge badge-muted">НЕ ЗАПУСКАЛСЯ</span></td></tr>
+<tr><td><code>homelab.py router status</code> / <code>uci wireless</code> / <code>exec &quot;iwinfo&quot;</code></td><td>SSID, каналы, шифрование, клиенты</td><td><span class="badge badge-muted">НЕ ЗАПУСКАЛСЯ</span></td></tr>
+<tr><td><code>wifi_audit.py</code> (read-only, маскирует MAC/секреты)</td><td>автоматический аудит Wi-Fi</td><td><span class="badge badge-muted">НЕ ЗАПУСКАЛСЯ</span></td></tr>
+<tr><td>Осмотр админки роутера владельцем</td><td>конфиг, логи, прошивка</td><td><span class="badge badge-warn">ОЖИДАЕТСЯ</span></td></tr>
+</tbody></table>
+<p><strong>Ограничения:</strong> нет адреса сети, нет авторизации владельца, нет доступа из моей среды; среда офлайн. Непроверенное помечается как «не удалось проверить».</p>
+<h2>3. Сводка окружения (заполняется владельцем/после доступа)</h2>
+<table><thead><tr><th>Элемент</th><th>Значение</th></tr></thead><tbody>
+<tr><td>Шлюз/роутер (IP, модель, прошивка)</td><td>—</td></tr>
+<tr><td>Подсеть / маска</td><td>—</td></tr>
+<tr><td>SSID (основной / гостевой / IoT)</td><td>—</td></tr>
+<tr><td>Диапазоны и каналы (2.4/5/6 ГГц)</td><td>—</td></tr>
+<tr><td>Клиентов (наблюдаемо)</td><td>—</td></tr>
+</tbody></table>
+<h2>4. Состояние радио (факты)</h2>
+<table><thead><tr><th>Интерфейс</th><th>SSID</th><th>Канал</th><th>Режим</th><th>Tx, dBm</th><th>Сигнал/шум</th><th>Клиентов</th></tr></thead><tbody>
+<tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+</tbody></table>
+<h2>5. Находки</h2>
+<table><thead><tr><th>ID</th><th>Severity</th><th>Находка (факт)</th><th>Влияние</th><th>Доказательство</th><th>Рекомендация</th></tr></thead><tbody>
+<tr><td><code>F-01</code></td><td><span class="badge badge-muted">НЕТ ДАННЫХ</span></td><td>данных нет</td><td>—</td><td>—</td><td>—</td></tr>
+</tbody></table>
+<blockquote>Заполняется только подтверждёнными фактами. Severity: CRITICAL/HIGH — реальный риск компрометации; MEDIUM — слабые настройки; LOW/INFO — гигиена/наблюдения. Формат каждой строки: <strong>факт → почему риск → как проверить → как исправить</strong>.</blockquote>
+<h2>6. Положительные наблюдения</h2>
+<ul>
+<li>данных нет (аудит не проводился)</li>
+</ul>
+<h2>7. Рекомендации / чек-лист для владельца (НЕ применялись мной)</h2>
+<blockquote class="ok">Ничего из перечисленного мной не менялось. Любое изменение — владелец сам, после бэкапа конфигурации, по одному шагу, с проверкой и откатом. Без подбора паролей и без проброса портов наружу.</blockquote>
+<p><span class="badge badge-danger">ВЫСОКИЙ ПРИОРИТЕТ</span> <strong>— реальная защита:</strong></p>
+<ol>
+<li>Обновить прошивку роутера/точек доступа до последней стабильной версии (по факту модели) — устраняет известные уязвимости.</li>
+<li>Сменить пароль администратора роутера на уникальный и длинный; доступ к админке — только из LAN (закрыть WAN-доступ к веб/SSH).</li>
+<li>WPA2-AES или WPA3; отказаться от WPA/TKIP и открытых сетей. WPS выключить.</li>
+<li>Отключить UPnP, DMZ и любой проброс портов «на всякий случай»; удалённый доступ — только VPN (WireGuard), не порты наружу.</li>
+<li>Разделить сети: гостевой SSID с изоляцией клиентов и без доступа к LAN; IoT/камеры — в отдельный сегмент/VLAN без доступа к личным устройствам.</li>
+</ol>
+<p><span class="badge badge-warn">СРЕДНИЙ ПРИОРИТЕТ</span></p>
+<ol>
+<li>Отключить сетевой ADB (порт 5555) на ТВ/телефонах, если не используется; не светить его в LAN.</li>
+<li>Проверить камеры/NVR: локальные учётные данные, отключить P2P/облако, закрыть лишние порты (34567/554/80), изолировать в IoT-сегменте.</li>
+<li>Посмотреть логи роутера на ошибки аутентификации и чужие устройства в DHCP/ARP; незнакомые MAC классифицировать, без банов «на всякий случай».</li>
+</ol>
+<p><span class="badge badge-ok">НИЗКИЙ ПРИОРИТЕТ</span> <strong>— гигиена:</strong></p>
+<ol>
+<li>Скрытие SSID — не мера защиты; можно не использовать.</li>
+<li>Мощность передатчика — минимально достаточная для зоны покрытия; развести 5 ГГц-каналы, если несколько AP.</li>
+</ol>
+<h2>8. Подтверждение отсутствия воздействий</h2>
+<ul>
+<li>Изменения в конфигурацию <strong>не вносились</strong>: <span class="badge badge-ok">ДА</span></li>
+<li>Активные атаки / подбор паролей / эксплуатация: <span class="badge badge-ok">НЕ ПРОВОДИЛИСЬ</span></li>
+<li>Секреты и полные MAC-адреса в отчёт <strong>не включены</strong>: <span class="badge badge-ok">ДА</span></li>
+<li>Сканирование чужой сети без авторизации <strong>не выполнялось</strong>: <span class="badge badge-ok">ДА</span></li>
+</ul>
+<h2>9. Итог и следующие шаги</h2>
+<ol>
+<li>Отчёт — каркас: фактических находок нет, потому что нет адреса, доступа и разрешения владельца.</li>
+<li>Рекомендации в §7 — безопасный офлайн-чек-лист, который Вова может выполнить самостоятельно.</li>
+<li>Для заполнения отчёта фактами нужно от пользователя: <strong>явное разрешение Вовы</strong>, <strong>адрес сети/шлюза</strong> и <strong>способ доступа</strong> (например, запуск <code>homelab.py</code> локально в его сети).</li>
+</ol>
+<blockquote class="warn"><strong>Риски:</strong> попытка активного аудита чужой сети без разрешения нарушает правила безопасности и может быть незаконной — поэтому работа остановлена на этапе уточнения, как и было запрошено («стоп при нет доступа»).</blockquote></div>
+  </section>
+</main>
+</body>
+</html>

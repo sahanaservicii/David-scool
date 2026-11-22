@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Свободный Голос — голосовой помощник</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Свободный Голос</h1>
+        <p class="sub">Локальный голосовой помощник: чат, умный дом, мультирум (сервер) · <a href="/music.html" style="color:#6bb6ff">Музыкальный терминал</a></p>
+      </div>
+      <div class="status" id="status">Статус: загрузка…</div>
+    </header>
+
+    <main>
+      <section class="chat" id="chat"></section>
+
+      <section class="controls">
+        <div class="row">
+          <label class="toggle">Комната:
+            <select id="roomSelect" class="select"></select>
+          </label>
+          <span class="hint-inline" id="roomHint"></span>
+        </div>
+        <div class="row">
+          <button id="micBtn" class="primary">🎤 Говорить</button>
+          <button id="stopSpeakBtn">🔇 Стоп озвучки</button>
+          <label class="toggle"><input type="checkbox" id="autoSpeak" checked /> Озвучивать ответы</label>
+          <label class="toggle"><input type="checkbox" id="continuous" /> Непрерывно</label>
+        </div>
+        <div class="row input-row">
+          <input id="textInput" type="text" placeholder="Напишите или скажите запрос…" autocomplete="off" />
+          <button id="sendBtn">Отправить</button>
+        </div>
+        <div class="hint" id="hint">Подсказки: «помощь», «какая температура в спальне», «включи свет в кухне», «включи музыку в этой комнате», «включи джаз в гостиной», «пауза/громче/следующий трек», «таймер на 5 минут».</div>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>Возможности и состояние</summary>
+          <pre id="caps"></pre>
+        </details>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

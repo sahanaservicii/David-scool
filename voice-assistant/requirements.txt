@@ -1,0 +1,10 @@
+# Core runtime: Python 3.10+ standard library only.
+# Optional extras (install only if you have them / need them):
+# pyyaml>=6.0        # YAML config support (JSON works without it)
+# requests>=2.31     # alternative HTTP client
+# beautifulsoup4     # better web search parsing (may already be installed)
+# lxml               # faster HTML parsing
+# sherpa-onnx        # offline STT/TTS models (bring your own models)
+# vosk               # offline STT alternative
+# openai             # OpenAI-compatible LLM/TTS/STT client (optional)
+# webrtcvad          # voice activity detection (optional)

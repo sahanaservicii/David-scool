@@ -1,0 +1,137 @@
+{
+  "app": {
+    "name": "Свободный Голос",
+    "language": "ru",
+    "timezone": "Europe/Moscow",
+    "log_level": "INFO"
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8765,
+    "allow_lan": true,
+    "api_token": "CHANGE_ME_LONG_RANDOM_TOKEN",
+    "cors_allow_origin": "*"
+  },
+  "llm": {
+    "provider": "auto",
+    "openai_compat": {
+      "base_url": "http://127.0.0.1:11434/v1",
+      "api_key": "",
+      "model": "qwen2.5:7b-instruct",
+      "timeout": 90,
+      "temperature": 0.4,
+      "max_tokens": 512
+    },
+    "system_prompt": "Ты — Свободный Голос, локальный голосовой помощник для умного дома. Отвечай кратко, по делу, на русском. Для управления устройствами и музыкой используй доступные навыки и факты из Home Assistant. Если не уверен в комнате, устройстве или треке — уточни."
+  },
+  "home_assistant": {
+    "url": "http://192.168.1.156:8123",
+    "token": "",
+    "secrets_file": "~/.config/opencode/secrets/homelab.env",
+    "timeout": 8
+  },
+  "music": {
+    "prefer": "home_assistant",
+    "music_assistant": {
+      "enabled": true,
+      "notes": "Рекомендуется для мультикомнатной музыки/радио/локальной библиотеки. Воспроизведение выполняется через HA media_player (MA-плееры)."
+    },
+    "library_path": "/media/music",
+    "radio_presets": [
+      {
+        "id": "nash_fon",
+        "name": "Фоновое радио (замените URL)",
+        "media_content_id": "https://example.com/radio_stream",
+        "media_content_type": "music",
+        "source": "url"
+      },
+      {
+        "id": "relax",
+        "name": "Relax (пример)",
+        "media_content_id": "https://example.com/relax.m3u",
+        "media_content_type": "music",
+        "source": "url"
+      }
+    ],
+    "archive_presets": [
+      {
+        "id": "all_music",
+        "name": "Вся музыка (локальный архив MA)",
+        "media_content_id": "library://track",
+        "media_content_type": "music",
+        "source": "music_assistant"
+      },
+      {
+        "id": "playlist_fon",
+        "name": "Плейлист: Фон (пример)",
+        "media_content_id": "Мой плейлист",
+        "media_content_type": "playlist",
+        "source": "music_assistant"
+      }
+    ],
+    "notes": "Пресеты используются музыкальным терминалом (/music). Для воспроизведения нужны настроенные rooms[].media_player и доступный Home Assistant/Music Assistant."
+  },
+  "rooms": [
+    {
+      "id": "kitchen",
+      "name": "Кухня",
+      "aliases": [
+        "кухне",
+        "на кухне",
+        "кухню"
+      ],
+      "satellite_id": "sat_kitchen",
+      "media_player": "media_player.kitchen",
+      "tts_player": "media_player.kitchen",
+      "microphone": "esp32_kitchen_mic",
+      "speaker": "kitchen_speaker",
+      "notes": "Спутник: wake-word + STT (ESP32/Wyoming) -> /api/satellite; музыка/TTS через media_player"
+    },
+    {
+      "id": "living_room",
+      "name": "Гостиная",
+      "aliases": [
+        "гостиной",
+        "в гостиной",
+        "зал",
+        "зале",
+        "в зале"
+      ],
+      "satellite_id": "sat_living_room",
+      "media_player": "media_player.living_room",
+      "tts_player": "media_player.living_room"
+    },
+    {
+      "id": "bedroom",
+      "name": "Спальня",
+      "aliases": [
+        "спальне",
+        "в спальне",
+        "спальню"
+      ],
+      "satellite_id": "sat_bedroom",
+      "media_player": "media_player.bedroom",
+      "tts_player": "media_player.bedroom"
+    }
+  ],
+  "satellites": {
+    "enabled": true,
+    "protocol": "http",
+    "endpoint": "/api/satellite",
+    "auth": "use server.api_token (Authorization: Bearer ... or X-Api-Token)",
+    "notes": "Каждый спутник должен передавать satellite_id и/или room, а также text/transcript для utterance-событий."
+  },
+  "search": {
+    "provider": "auto",
+    "timeout": 10,
+    "max_results": 5,
+    "searxng_url": "",
+    "allow_online": true
+  },
+  "security": {
+    "confirm_destructive": true,
+    "log_conversations": false,
+    "redact_secrets": true,
+    "require_api_token_for_lan": false
+  }
+}

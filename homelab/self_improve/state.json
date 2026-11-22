@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "interval_note": "OpenChamber cron: 0 */4 * * * (Europe/Moscow), не каждую минуту",
+  "last_run_utc": "2026-11-22T09:17:13Z",
+  "last_success_utc": "2026-11-18T04:47:24Z",
+  "last_status": "skipped",
+  "last_summary": "Пропуск цикла: resource-check ok=false (высокая нагрузка, load1=19.46 при 8 CPU, MemAvailable ~2.86 ГБ из 10.6 ГБ, SwapFree ~6.33 ГБ из 12.0 ГБ). doctor: шлюз 192.168.0.1 TCP/SSH недоступен, HA отложен (enabled=false), TV ADB нет устройства 'tv', мост телефона OK. Изменений не вносилось, идея не выбиралась, бэкап/notify не выполнялись.",
+  "last_backup": "/root/workspace/homelab/backups/homelab-20261118-044718.tar.gz",
+  "runs": 18,
+  "successes": 4,
+  "failures": 0
+}

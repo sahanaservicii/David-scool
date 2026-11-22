@@ -1,0 +1,84 @@
+{
+  "generated_utc": "2026-11-19T06:00:47Z",
+  "ok": true,
+  "target_ssids": [
+    "RT-WIFI-47",
+    "sahanovschi"
+  ],
+  "radios": [
+    {
+      "iface": "phy0-ap0",
+      "ssid": "RT-WIFI-47",
+      "channel": 36,
+      "htmode": "VHT80",
+      "txpower": 23,
+      "signal": -62,
+      "noise": -103,
+      "clients": 1
+    },
+    {
+      "iface": "phy1-ap0",
+      "ssid": "RT-WIFI-47",
+      "channel": 36,
+      "htmode": "HE80",
+      "txpower": 30,
+      "signal": -61,
+      "noise": -109,
+      "clients": 2
+    },
+    {
+      "iface": "phy2-ap0",
+      "ssid": "RT-WIFI-47",
+      "channel": 1,
+      "htmode": "HE20",
+      "txpower": 30,
+      "signal": -53,
+      "noise": -103,
+      "clients": 18
+    },
+    {
+      "iface": "phy2-ap1",
+      "ssid": "RT-GUEST",
+      "channel": 1,
+      "htmode": "HE20",
+      "txpower": 30,
+      "signal": 0,
+      "noise": -103,
+      "clients": 0
+    }
+  ],
+  "log_counts": {
+    "auth_noack": 55,
+    "deauth": 3,
+    "dhcp_discover": 0,
+    "ssh_bad_password": 8,
+    "ssh_preauth_exit": 18
+  },
+  "findings": [
+    {
+      "severity": "info",
+      "text": "sahanovschi в homelab.json — хост (sahanovschi.v6.rocks), не SSID; по вашему выбору проверяется только Wi-Fi."
+    },
+    {
+      "severity": "info",
+      "text": "Два 5 ГГц радио RT-WIFI-47 работают на одном канале 36 — возможна интерференция."
+    },
+    {
+      "severity": "warn",
+      "text": "Wi-Fi: 55 ошибок «did not acknowledge authentication response», OUI: 7c:f6:66:xx:xx:xx."
+    },
+    {
+      "severity": "warn",
+      "text": "Безопасность (не Wi-Fi): 8 неудачных попыток пароля к SSH и 18 обрывов до аутентификации."
+    }
+  ],
+  "fixes_applied": [
+    "отчёт перезаписан атомарно: reports/wifi-audit-2026-11-19.md"
+  ],
+  "fix_proposals": [
+    "Развести radio0 и radio1 по разным 5 ГГц-каналам (например 36/149) — только после вашего подтверждения и бэкапа.",
+    "Проверить клиента с указанным OUI: он пытается ассоциироваться с основным SSID, хотя числится в allow-списке гостевой сети. Изменения macfilter — только после подтверждения.",
+    "Ограничить SSH белым списком источников / WireGuard — требует изменения firewall, только после подтверждения."
+  ],
+  "errors": []
+}

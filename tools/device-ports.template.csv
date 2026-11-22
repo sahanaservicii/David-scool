@@ -1,0 +1,3 @@
+Proto,Port,Direction,Description
+TCP,443,outbound,Описание назначения
+UDP,123,outbound,Описание назначения

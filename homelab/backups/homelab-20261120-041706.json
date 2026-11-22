@@ -1,0 +1,14 @@
+{
+  "created": "2026-11-20 04:17:06",
+  "files": [
+    "homelab.json",
+    "state/scan.json",
+    "README.md",
+    "INVENTORY.md",
+    "RUNBOOK.md",
+    "CHANGELOG.md"
+  ],
+  "router": "openwrt-20261120-041706.tar.gz",
+  "ha": null,
+  "sha256": "e00918daba3b1421f8904ee5aa5b5d7bfa2500c400fec2b5a0e24a7775e6309c"
+}

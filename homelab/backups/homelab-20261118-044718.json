@@ -1,0 +1,14 @@
+{
+  "created": "2026-11-18 04:47:18",
+  "files": [
+    "homelab.json",
+    "state/scan.json",
+    "README.md",
+    "INVENTORY.md",
+    "RUNBOOK.md",
+    "CHANGELOG.md"
+  ],
+  "router": null,
+  "ha": null,
+  "sha256": "d719222c11c0b1eac9ada0f99b44214da5d51a0a58834deb61e67c5ab75e9092"
+}

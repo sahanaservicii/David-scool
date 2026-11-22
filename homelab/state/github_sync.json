@@ -1,0 +1,18 @@
+{
+  "last_run_utc": "2026-11-19T05:19:17Z",
+  "mode": "all",
+  "ok": true,
+  "results": {
+    "skills": {
+      "ok": true,
+      "skills_local": 16,
+      "skills_copied": 16,
+      "result": "опубликовано 86b1777"
+    },
+    "backup": {
+      "ok": true,
+      "archive": "homelab-20261119-051914.tar.gz",
+      "result": "опубликовано d4583e4"
+    }
+  }
+}

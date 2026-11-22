@@ -1,0 +1,122 @@
+{
+  "network": "192.168.1.0/24",
+  "gateway": "192.168.1.1",
+  "router": {
+    "host": "192.168.1.1",
+    "user": "root",
+    "port": 22,
+    "kind": "openwrt",
+    "note": "OpenWrt + LuCI, SSH только по ключу"
+  },
+  "home_assistant": {
+    "host": "192.168.1.127",
+    "url": "http://192.168.1.127:8123",
+    "kind": "home-assistant",
+    "enabled": false,
+    "note": "отложено: настроим позже, сейчас сеть/WireGuard"
+  },
+  "android": [
+    {
+      "name": "tv",
+      "host": "192.168.1.139",
+      "port": 5555,
+      "kind": "android-tv",
+      "note": "Google ADT-3, Android TV 14; сетевой ADB держать выключенным, включать только на время работ"
+    },
+    {
+      "name": "phone",
+      "host": "192.168.1.155",
+      "port": 5555,
+      "kind": "android-phone",
+      "note": "POCO (этот телефон); управление через локальный мост android-device, ADB обычно выключен"
+    }
+  ],
+  "cameras": [
+    {
+      "name": "cam-10",
+      "host": "192.168.1.10",
+      "kind": "xm-camera",
+      "note": "XMEye, HTTP+RTSP+34567"
+    },
+    {
+      "name": "cam-93",
+      "host": "192.168.1.93",
+      "kind": "xm-camera",
+      "note": "JF-вариант XM"
+    },
+    {
+      "name": "cam-135",
+      "host": "192.168.1.135",
+      "kind": "xm-camera",
+      "note": "XMEye"
+    },
+    {
+      "name": "nvr-190",
+      "host": "192.168.1.190",
+      "kind": "nvr",
+      "note": "Topsvision reg.lan"
+    },
+    {
+      "name": "cam-206",
+      "host": "192.168.1.206",
+      "kind": "xm-camera",
+      "note": "JF-вариант XM"
+    }
+  ],
+  "other": [
+    {
+      "name": "repeater-223",
+      "host": "192.168.1.223",
+      "kind": "wifi-repeater",
+      "note": "Wavlink WN570HA1B, remote/UPnP/DMZ выключены"
+    },
+    {
+      "name": "midea-ac",
+      "host": "192.168.1.136",
+      "kind": "air-conditioner",
+      "note": "midea_e1_0523"
+    },
+    {
+      "name": "yeelight-120",
+      "host": "192.168.1.120",
+      "kind": "light",
+      "note": "yeelink-light-colorb"
+    },
+    {
+      "name": "yeelight-237",
+      "host": "192.168.1.237",
+      "kind": "light",
+      "note": "yeelink-light-colorb"
+    },
+    {
+      "name": "desktop-239",
+      "host": "192.168.1.239",
+      "kind": "pc",
+      "note": "DESKTOP-DV7IDOM"
+    },
+    {
+      "name": "honor-138",
+      "host": "192.168.1.138",
+      "kind": "android-phone",
+      "note": "HONOR-X5c-Plus"
+    },
+    {
+      "name": "realme-241",
+      "host": "192.168.1.241",
+      "kind": "android-phone",
+      "note": "realme-10"
+    },
+    {
+      "name": "salute-tv-221",
+      "host": "192.168.1.221",
+      "kind": "tv",
+      "note": "SaluteTV"
+    },
+    {
+      "name": "miwifi-177",
+      "host": "192.168.1.177",
+      "kind": "router",
+      "note": "miwifi-rd10m"
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "generated_at": "2026-11-21 05:02:09",
+  "scope": "Актуальный список (скан + fallback): 192.168.1.0/24, 192.168.0.0/24; обнаружение живых хостов + TCP-порты 1–65535 на найденных хостах",
+  "source_ip": "192.168.0.24",
+  "live_hosts_found_now": [
+    {
+      "ip": "192.168.1.1",
+      "network": "192.168.1.0/24",
+      "known_as": "isp-gateway-1 (Innbox G84, шлюз)",
+      "open_ports": [
+        {
+          "port": 53,
+          "state": "open",
+          "banner_head": "",
+          "service": "dns"
+        },
+        {
+          "port": 80,
+          "state": "open",
+          "banner_head": "HTTP/1.1 200 OK\nServer: Innbox_webserv\nDate: Sat, 21 Nov 2026 05:02:05 GMT\nContent-Type: text/html\nAccept-Ranges: bytes\nConnection: Keep-Alive\nCache-Control: no-cache\nX-Pad: avoid browser bug",
+          "title": "InnboxG84",
+          "service": "http",
+          "http_status": "200",
+          "server": "Innbox_webserv"
+        },
+        {
+          "port": 443,
+          "state": "open",
+          "banner_head": "",
+          "service": "https/tls?"
+        },
+        {
+          "port": 2679,
+          "state": "open",
+          "banner_head": "\u0000\u0000\n\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000CSM\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000O\u0000\u0000\u0000\u0000Í%\u0001kÿÿø)\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+        },
+        {
+          "port": 51005,
+          "state": "open",
+          "banner_head": "HTTP/1.1 401 Unauthorized\nContent-Length: 0\nConnection: close\nWWW-Authenticate: Digest realm=\"realm@easycwmp\",qop=\"auth\",nonce=\"7b49f9edbc587344aa3f827dae7d06ca00033a4d\",opaque=\"328458fab28345ae87ab3210a8513b14eff452a2\"",
+          "service": "http",
+          "http_status": "401"
+        }
+      ]
+    },
+    {
+      "ip": "192.168.1.27",
+      "network": "192.168.1.0/24",
+      "known_as": "неизвестное устройство (обнаружено сканом)",
+      "open_ports": [
+        {
+          "port": 53,
+          "state": "open",
+          "banner_head": "",
+          "service": "dns"
+        },
+        {
+          "port": 80,
+          "state": "open",
+          "banner_head": "HTTP/1.0 302 Moved Temporarily\nDate: Sat, 21 Nov 2026 05:02:07 GMT\nServer: Boa/0.93.15\nX-Frame-Options: SAMEORIGIN\nConnection: close\nContent-Type: text/html\nLocation: /admin/login.asp",
+          "title": "302 Moved Temporarily",
+          "service": "http",
+          "http_status": "302",
+          "server": "Boa/0.93.15"
+        },
+        {
+          "port": 443,
+          "state": "open",
+          "banner_head": "",
+          "service": "https/tls?"
+        }
+      ]
+    },
+    {
+      "ip": "192.168.0.1",
+      "network": "192.168.0.0/24",
+      "known_as": "шлюз/роутер 192.168.0.0/24 (квартирная сеть)",
+      "open_ports": [
+        {
+          "port": 53,
+          "state": "open",
+          "banner_head": "",
+          "service": "dns"
+        },
+        {
+          "port": 80,
+          "state": "open",
+          "banner_head": "HTTP/1.0 302 Moved Temporarily\nDate: Sat, 21 Nov 2026 05:02:08 GMT\nServer: Boa/0.93.15\nX-Frame-Options: SAMEORIGIN\nConnection: close\nContent-Type: text/html\nLocation: /admin/login.asp",
+          "title": "302 Moved Temporarily",
+          "service": "http",
+          "http_status": "302",
+          "server": "Boa/0.93.15"
+        },
+        {
+          "port": 443,
+          "state": "open",
+          "banner_head": "",
+          "service": "https/tls?"
+        }
+      ]
+    }
+  ],
+  "inventory_fallback_not_seen_now": [
+    {
+      "ip": "192.168.0.12",
+      "known_as": "cast-bedroom-12 (TV/Chromecast)"
+    },
+    {
+      "ip": "192.168.0.17",
+      "known_as": "lg-webos-17 (LG TV)"
+    },
+    {
+      "ip": "192.168.1.10",
+      "known_as": "cam-10 (XM-камера)"
+    },
+    {
+      "ip": "192.168.1.93",
+      "known_as": "cam-93 (XM-камера)"
+    },
+    {
+      "ip": "192.168.1.120",
+      "known_as": "yeelight-120"
+    },
+    {
+      "ip": "192.168.1.135",
+      "known_as": "cam-135 (XM-камера)"
+    },
+    {
+      "ip": "192.168.1.136",
+      "known_as": "midea-ac"
+    },
+    {
+      "ip": "192.168.1.138",
+      "known_as": "honor-138"
+    },
+    {
+      "ip": "192.168.1.139",
+      "known_as": "tv (Android TV, офлайн)"
+    },
+    {
+      "ip": "192.168.1.155",
+      "known_as": "phone (этот телефон/мост)"
+    },
+    {
+      "ip": "192.168.1.156",
+      "known_as": "homeassistant"
+    },
+    {
+      "ip": "192.168.1.177",
+      "known_as": "miwifi-177"
+    },
+    {
+      "ip": "192.168.1.190",
+      "known_as": "nvr-190"
+    },
+    {
+      "ip": "192.168.1.191",
+      "known_as": "topsvision-reg-191 (NVR)"
+    },
+    {
+      "ip": "192.168.1.206",
+      "known_as": "cam-206 (XM-камера)"
+    },
+    {
+      "ip": "192.168.1.221",
+      "known_as": "salute-tv-221"
+    },
+    {
+      "ip": "192.168.1.223",
+      "known_as": "repeater-223 (Wavlink)"
+    },
+    {
+      "ip": "192.168.1.237",
+      "known_as": "yeelight-237"
+    },
+    {
+      "ip": "192.168.1.239",
+      "known_as": "desktop-239"
+    },
+    {
+      "ip": "192.168.1.241",
+      "known_as": "realme-241"
+    }
+  ],
+  "notes": [
+    "Полный перебор 1–65535 выполнен только для хостов, обнаруженных как «живые» по набору типовых портов; хосты без открытых типовых портов/спящие могут не попасть в обнаружение.",
+    "На 192.168.1.1 (Innbox G84) открыты 53,80,443,2679,51005 (51005: HTTP 401 Digest realm@easycwmp/TR-069-подобный доступ). 192.168.1.27 — устройство с веб-интерфейсом Boa/0.93.15 (/admin/login.asp), в инвентаре ранее не отмечено.",
+    "Многие известные устройства из инвентаря сейчас не отвечают по TCP (выключены/спят/недоступны с текущего сегмента)."
+  ]
+}

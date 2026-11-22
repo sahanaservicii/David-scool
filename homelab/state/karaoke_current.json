@@ -1,0 +1,8 @@
+{
+  "video": "/tmp/karaoke-http2.mNBhEL/clip.mkv",
+  "url": "http://127.0.0.1:18772/video",
+  "bytes": 2097152,
+  "trigger": "/tmp/karaoke-http2.mNBhEL/karaoke.play",
+  "dry_run": false,
+  "created_at": "2026-11-21 18:11:11"
+}

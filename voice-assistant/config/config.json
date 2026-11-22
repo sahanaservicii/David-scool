@@ -1,0 +1,139 @@
+{
+  "app": {
+    "name": "Свободный Голос",
+    "name_en": "FreeVoice Assistant",
+    "language": "ru",
+    "timezone": "Europe/Moscow",
+    "data_dir": "data",
+    "log_level": "INFO"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8765,
+    "allow_lan": false,
+    "api_token": "",
+    "cors_allow_origin": "*"
+  },
+  "tts": {
+    "provider": "auto",
+    "voice": "default",
+    "rate": 1.0,
+    "fallback_chain": [
+      "browser",
+      "system",
+      "piper",
+      "sherpa",
+      "openai_compat"
+    ]
+  },
+  "stt": {
+    "provider": "auto",
+    "language": "ru-RU",
+    "fallback_chain": [
+      "browser",
+      "whisper_cpp",
+      "faster_whisper",
+      "openai_compat"
+    ]
+  },
+  "llm": {
+    "provider": "auto",
+    "openai_compat": {
+      "base_url": "",
+      "api_key": "",
+      "model": "qwen2.5:7b-instruct",
+      "timeout": 90,
+      "temperature": 0.4,
+      "max_tokens": 512
+    },
+    "system_prompt": "Ты — Свободный Голос, полностью локальный голосовой помощник для умного дома. Отвечай кратко, по делу, на русском, если пользователь не попросил иначе. Ты работаешь на домашнем сервере, можешь помогать управлять умным домом через Home Assistant, запускать музыку по комнатам и вести диалог. Не выдумывай факты о состоянии устройств — опирайся на данные инструментов/контекста. Если действие требует уточнения комнаты, устройства или трека — спроси."
+  },
+  "search": {
+    "provider": "auto",
+    "timeout": 10,
+    "max_results": 5,
+    "searxng_url": "",
+    "allow_online": true
+  },
+  "home_assistant": {
+    "url": "",
+    "token": "",
+    "secrets_file": "~/.config/opencode/secrets/homelab.env",
+    "timeout": 8,
+    "verify": true
+  },
+  "music": {
+    "prefer": "home_assistant",
+    "music_assistant": {
+      "enabled": false,
+      "notes": "Для локальной библиотеки/радио/мультикомнатной музыки рекомендуется Music Assistant в Home Assistant. Укажите rooms[].media_player на MA/HA media_player сущность."
+    },
+    "library_path": "/media/music",
+    "radio_presets": [
+      {
+        "id": "radio_example",
+        "name": "Радио (пример URL потока)",
+        "media_content_id": "https://example.com/stream.mp3",
+        "media_content_type": "music",
+        "source": "url"
+      }
+    ],
+    "archive_presets": [
+      {
+        "id": "archive_example",
+        "name": "Архив/плейлист (пример media_id в MA/HA)",
+        "media_content_id": "library://playlist/my_playlist",
+        "media_content_type": "playlist",
+        "source": "music_assistant"
+      }
+    ],
+    "notes": "Пресеты используются музыкальным терминалом (/music). Для воспроизведения нужны настроенные rooms[].media_player и доступный Home Assistant/Music Assistant."
+  },
+  "rooms": [
+    {
+      "id": "default",
+      "name": "Дом",
+      "aliases": [
+        "здесь",
+        "тут",
+        "дом",
+        "везде"
+      ],
+      "satellite_id": "",
+      "media_player": "",
+      "tts_player": "",
+      "microphone": "",
+      "speaker": "",
+      "notes": "Заполните config/config.local.json реальными комнатами, спутниками и media_player из Home Assistant"
+    }
+  ],
+  "satellites": {
+    "enabled": false,
+    "protocol": "http",
+    "notes": "Спутники (ESPHome/Wyoming/custom) могут отправлять текст/события в /api/satellite с room/satellite_id. См. docs/MULTIROOM_HA.md"
+  },
+  "skills": {
+    "enabled": [
+      "time",
+      "timer",
+      "notes",
+      "calc",
+      "search",
+      "weather",
+      "system",
+      "help",
+      "smalltalk",
+      "ha",
+      "homelab",
+      "web",
+      "app_control",
+      "fallback"
+    ]
+  },
+  "security": {
+    "confirm_destructive": true,
+    "log_conversations": false,
+    "redact_secrets": true,
+    "require_api_token_for_lan": false
+  }
+}

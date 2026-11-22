@@ -1,0 +1,13 @@
+{
+  "created": "2026-11-20T04:17:06+00:00",
+  "stamp": "20261120-041706",
+  "local": "/root/workspace/homelab/backups/homelab-20261120-041706.tar.gz",
+  "router": "/root/workspace/homelab/backups/openwrt-20261120-041706.tar.gz",
+  "ha": {
+    "file": "ha-config-20261120-041706.json",
+    "via": "туннель (поднят через роутер)",
+    "version": "2026.11.2"
+  },
+  "cloud": "не настроен",
+  "errors": []
+}

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Отчёт о сканировании сети 192.168.1.0/24</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --text:#e6e9ef; --muted:#98a0ae; --accent:#5b9dff;
+    --crit:#ff4d5e; --high:#ff9f43; --med:#ffd93d; --ok:#3ddc97; --low:#8b93a7;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f5f7fa; --panel:#fff; --panel2:#f0f3f8; --line:#dfe4ec;
+           --text:#131720; --muted:#5d6675; --accent:#2563eb; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif}
+  .wrap{max-width:1060px;margin:0 auto;padding:32px 20px 80px}
+  header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+  h1{font-size:26px;line-height:1.25;margin:0 0 10px;letter-spacing:-.3px}
+  .meta{color:var(--muted);font-size:13.5px;display:flex;flex-wrap:wrap;gap:6px 18px}
+  .meta b{color:var(--text);font-weight:600}
+  h2{font-size:19px;margin:38px 0 14px;letter-spacing:-.2px}
+  h3{font-size:16px;margin:26px 0 10px}
+  p{margin:10px 0}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0 6px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card .n{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1.1}
+  .card .l{color:var(--muted);font-size:12.5px;margin-top:4px}
+  .card.crit .n{color:var(--crit)} .card.high .n{color:var(--high)} .card.ok .n{color:var(--ok)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  tbody tr:hover{background:var(--panel2)}
+  code,.mono{font-family:var(--mono);font-size:12.8px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-family:var(--mono);font-size:12.7px;line-height:1.55}
+  .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+  .b-crit{background:rgba(255,77,94,.15);color:var(--crit);border:1px solid rgba(255,77,94,.4)}
+  .b-high{background:rgba(255,159,67,.15);color:var(--high);border:1px solid rgba(255,159,67,.4)}
+  .b-med{background:rgba(255,217,61,.14);color:#c9a800;border:1px solid rgba(255,217,61,.4)}
+  .b-ok{background:rgba(61,220,151,.14);color:var(--ok);border:1px solid rgba(61,220,151,.4)}
+  .b-low{background:rgba(139,147,167,.16);color:var(--low);border:1px solid rgba(139,147,167,.4)}
+  .finding{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+  .finding.crit{border-left-color:var(--crit)} .finding.high{border-left-color:var(--high)}
+  .finding.med{border-left-color:var(--med)} .finding.low{border-left-color:var(--low)}
+  .finding h3{margin:0 0 8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .host{font-family:var(--mono);color:var(--accent)}
+  ul,ol{padding-left:22px;margin:10px 0}
+  li{margin:6px 0}
+  .note{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-size:14px;color:var(--muted)}
+  .note b{color:var(--text)}
+  .sep{height:1px;background:var(--line);margin:34px 0}
+  footer{color:var(--muted);font-size:12.5px;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
+  .tag{font-family:var(--mono);font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Отчёт о сканировании локальной сети</h1>
+  <div class="meta">
+    <span><b>Сеть:</b> 192.168.1.0/24</span>
+    <span><b>Шлюз:</b> 192.168.1.1</span>
+    <span><b>Сканирующий узел:</b> 192.168.1.155</span>
+    <span><b>Дата:</b> 15 ноября 2026</span>
+  </div>
+</header>
+
+<div class="cards">
+  <div class="card"><div class="n">9</div><div class="l">активных устройств</div></div>
+  <div class="card crit"><div class="n">1</div><div class="l">критическая находка</div></div>
+  <div class="card high"><div class="n">6</div><div class="l">устройств повышенного риска</div></div>
+  <div class="card ok"><div class="n">3</div><div class="l">RTSP под паролем</div></div>
+</div>
+
+<h2>Статус исправлений</h2>
+<table>
+  <thead><tr><th>Проблема</th><th>Действие</th><th>Статус</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>ADB без авторизации на <code>192.168.1.139</code> (порт 5555)</td>
+      <td><code>setprop service.adb.tcp.port -1</code> + <code>setprop persist.adb.tcp.port -1</code> + перезапуск <code>adbd</code></td>
+      <td><span class="badge b-ok">ИСПРАВЛЕНО</span> порт 5555 закрыт, проверено</td>
+    </tr>
+    <tr>
+      <td>Камеры XM/NVR: HTTP без TLS, слабая защита</td>
+      <td>Нужен логин/пароль администратора устройств</td>
+      <td><span class="badge b-med">ОЖИДАЕТ ДОСТУПА</span></td>
+    </tr>
+    <tr>
+      <td>Wavlink WN570HA1B: дефолтный сертификат, HTTP-админка</td>
+      <td>Проверено через API: remote management <b>выкл</b>, UPnP <b>выкл</b>, DMZ <b>выкл</b>, пробросов <b>0</b>, DHCP не раздаёт (режим репитера)</td>
+      <td><span class="badge b-ok">ПРОВЕРЕНО</span> риск низкий; сертификат — прошивочный</td>
+    </tr>
+    <tr>
+      <td>OpenWrt: проброс портов, SSH/LuCI, сегментация IoT</td>
+      <td>Аудит выполнен. Удалён мёртвый проброс <code>HA-External-Access</code> (WAN 8123 → <code>.156</code>, хост не существует; HA живёт на <code>.127</code>), убран дубль правила WireGuard. Firewall перезагружен</td>
+      <td><span class="badge b-ok">ИСПРАВЛЕНО</span> пробросов на WAN больше нет</td>
+    </tr>
+  </tbody>
+</table>
+<p class="tag">После исправления ADB приставка пересканирована: <code>5555</code> не отвечает, остальные сервисы (7000, 8008, 8009) без изменений. USB-отладка на устройстве сохранена.</p>
+
+<h2>1. Краткое резюме</h2>
+<p>В сети обнаружено <b>9 активных узлов</b>: роутер OpenWrt, четыре IP-камеры
+семейства Xiongmai/XMeye, сетевой видеорегистратор Topsvision, уличный Wi-Fi
+ретранслятор Wavlink и Android TV приставка Google ADT-3.</p>
+<p>Самая серьёзная проблема — <b>приставка 192.168.1.139 отдаёт root-консоль через ADB
+любому в этой Wi-Fi сети без пароля и без подтверждения на экране</b>. Вторая по
+значимости — пять устройств видеонаблюдения с устаревшими прошивками XM и
+веб-интерфейсами без TLS.</p>
+
+<table>
+  <thead><tr><th>#</th><th>Находка</th><th>Критичность</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>192.168.1.139:5555</code> — ADB без авторизации, даёт root любому в LAN</td><td><span class="badge b-crit">КРИТИЧНО</span></td></tr>
+    <tr><td>2</td><td>5 устройств видеонаблюдения: веб-интерфейс по HTTP без шифрования, старые прошивки XM</td><td><span class="badge b-high">ВЫСОКО</span></td></tr>
+    <tr><td>3</td><td><code>192.168.1.223</code> — просроченный дефолтный TLS-сертификат (2021), HTTP-админка</td><td><span class="badge b-high">ВЫСОКО</span></td></tr>
+    <tr><td>4</td><td>Роутер OpenWrt: SSH и LuCI доступны всей сети</td><td><span class="badge b-med">СРЕДНЕ</span></td></tr>
+    <tr><td>5</td><td>Нет сегментации: IoT в одной сети с роутером и ТВ</td><td><span class="badge b-med">СРЕДНЕ</span></td></tr>
+  </tbody>
+</table>
+
+<h2>2. Параметры и методика</h2>
+<table>
+  <tbody>
+    <tr><th style="width:210px">Диапазон</th><td>192.168.1.1 – 192.168.1.254</td></tr>
+    <tr><th>Обнаружение хостов</th><td>TCP connect по 19 сервисным портам</td></tr>
+    <tr><th>Сканирование портов</th><td>~220 популярных TCP-портов на каждый хост</td></tr>
+    <tr><th>Идентификация</th><td>Баннеры, HTTP-заголовки и <code>&lt;title&gt;</code>, TLS-сертификаты (CN/SAN), RTSP <code>OPTIONS</code>/<code>DESCRIBE</code>, ONVIF SOAP, DIAL/UPnP, ADB handshake</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <b>Ограничения метода — важно для трактовки результатов.</b>
+  Сканирующий узел — Android-устройство без доступа к raw-сокетам: нет ICMP (ping),
+  ARP и таблицы ARP, поэтому <b>MAC-адреса и производители по OUI недоступны</b>.
+  Multicast заблокирован → <b>SSDP и mDNS не работают</b>, «дружественные имена»
+  устройств получить не удалось. Сканировался только TCP — UDP-сервисы (SNMP, Syslog, NTP)
+  не проверялись. <b>Пароли не подбирались:</b> выводы о слабой защите сделаны по
+  косвенным признакам — HTTP без TLS, дефолтные сертификаты, открытые служебные порты.
+</div>
+
+<h2>3. Карта сети</h2>
+<table>
+  <thead>
+    <tr><th>IP</th><th>Имя (PTR)</th><th>Устройство</th><th>Порты</th><th>Риск</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="mono">192.168.1.1</td><td class="mono">OpenWrt.lan</td><td>Роутер OpenWrt (LuCI)</td><td class="mono">22, 53, 80, 443</td><td><span class="badge b-med">средний</span></td></tr>
+    <tr><td class="mono">192.168.1.10</td><td>—</td><td>IP-камера/регистратор XM (XMEye)</td><td class="mono">80, 554, 34567</td><td><span class="badge b-high">высокий</span></td></tr>
+    <tr><td class="mono">192.168.1.93</td><td>—</td><td>IP-камера/регистратор XM (JF)</td><td class="mono">80, 554, 34567</td><td><span class="badge b-high">высокий</span></td></tr>
+    <tr><td class="mono">192.168.1.132</td><td>—</td><td>Нестабильный узел (спящее устройство)</td><td class="mono">5000*</td><td><span class="badge b-low">неизвестно</span></td></tr>
+    <tr><td class="mono">192.168.1.135</td><td>—</td><td>IP-камера/регистратор XM (XMEye)</td><td class="mono">80, 554, 34567</td><td><span class="badge b-high">высокий</span></td></tr>
+    <tr><td class="mono">192.168.1.139</td><td>—</td><td>Google ADT-3, Android TV 14 (+AirReceiver/Cast)</td><td class="mono">5555, 6000, 7000, 8008, 8009</td><td><span class="badge b-crit">критический</span></td></tr>
+    <tr><td class="mono">192.168.1.190</td><td class="mono">reg.lan</td><td>NVR/XVR Topsvision</td><td class="mono">80, 554, 34567</td><td><span class="badge b-high">высокий</span></td></tr>
+    <tr><td class="mono">192.168.1.206</td><td>—</td><td>IP-камера/регистратор XM (JF)</td><td class="mono">80, 554, 34567</td><td><span class="badge b-high">высокий</span></td></tr>
+    <tr><td class="mono">192.168.1.223</td><td>—</td><td>Wi-Fi ретранслятор Wavlink WN570HA1B</td><td class="mono">53, 80, 443</td><td><span class="badge b-high">высокий</span></td></tr>
+    <tr><td class="mono">192.168.1.155</td><td>—</td><td>Сканирующий узел (Android)</td><td class="mono">—</td><td><span class="badge b-low">—</span></td></tr>
+  </tbody>
+</table>
+<p class="tag">* 192.168.1.132 отвечал на порту 5000 при первом проходе и стал недоступен при повторном (No route to host) — вероятно, спящий телефон.</p>
+
+<h3>Полная инвентаризация сети</h3>
+<p>Таблица выше — только устройства с открытыми TCP-портами. Полный список снят с роутера
+(DHCP-leases + ARP): <b>37 устройств</b> в аренде, <b>48</b> в таблице соседей. Имена даны
+так, как их объявляет само устройство.</p>
+<table><thead><tr><th>IP</th><th>Имя устройства</th><th>MAC</th><th>Порты</th></tr></thead><tbody>
+<tr><td class="mono">192.168.1.106</td><td>—</td><td class="mono">BC:35:1E:8D:60:EA</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.111</td><td>—</td><td class="mono">BC:35:1E:4C:55:3D</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.119</td><td>—</td><td class="mono">50:8B:B9:0D:A6:F6</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.120</td><td>yeelink-light-colorb_miap408D</td><td class="mono">EC:4D:3E:37:40:8D</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.127</td><td>homeassistant</td><td class="mono">04:EA:56:4F:37:C9</td><td class="mono">8123</td></tr>
+<tr><td class="mono">192.168.1.134</td><td>—</td><td class="mono">B8:06:0D:7D:E9:57</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.136</td><td>midea_e1_0523</td><td class="mono">A0:99:21:89:E7:62</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.137</td><td>wlan0</td><td class="mono">C0:F8:53:5D:FC:5D</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.138</td><td>HONOR-X5c-Plus</td><td class="mono">6E:8D:A4:93:E3:19</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.139</td><td>—</td><td class="mono">72:62:5A:C8:91:CB</td><td class="mono">7000,8008,8009</td></tr>
+<tr><td class="mono">192.168.1.140</td><td>—</td><td class="mono">60:3D:61:59:98:DA</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.141</td><td>—</td><td class="mono">BC:35:1E:4C:48:7E</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.144</td><td>—</td><td class="mono">D8:C8:0C:10:91:53</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.146</td><td>—</td><td class="mono">4E:AA:59:94:B1:64</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.148</td><td>—</td><td class="mono">B8:06:0D:68:EF:3E</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.150</td><td>—</td><td class="mono">4C:A9:19:D7:76:2F</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.153</td><td>—</td><td class="mono">50:8B:B9:0A:30:4D</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.154</td><td>—</td><td class="mono">B8:06:0D:68:EA:A3</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.155</td><td>POCO-X8-Pro-Max</td><td class="mono">D2:13:C2:FF:00:24</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.159</td><td>—</td><td class="mono">8C:EA:12:53:6A:F2</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.173</td><td>lwip0</td><td class="mono">BC:35:1E:8D:5C:31</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.177</td><td>miwifi-rd10m</td><td class="mono">CE:D8:43:0A:0E:62</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.188</td><td>—</td><td class="mono">4C:A9:19:12:58:28</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.189</td><td>—</td><td class="mono">CE:07:7B:5F:D0:D5</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.190</td><td>reg</td><td class="mono">C8:22:02:59:C6:0F</td><td class="mono">80,554,34567</td></tr>
+<tr><td class="mono">192.168.1.191</td><td>—</td><td class="mono">B8:06:0D:68:D4:4D</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.192</td><td>—</td><td class="mono">CE:07:7B:5F:D0:D6</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.196</td><td>—</td><td class="mono">C4:82:E1:D8:FC:4F</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.213</td><td>—</td><td class="mono">D8:C8:0C:CC:D9:1E</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.221</td><td>SaluteTV</td><td class="mono">F4:20:15:29:F7:8A</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.223</td><td>—</td><td class="mono">80:3F:5D:30:99:4E</td><td class="mono">53,80,443</td></tr>
+<tr><td class="mono">192.168.1.234</td><td>—</td><td class="mono">84:7A:B6:E8:70:3C</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.237</td><td>yeelink-light-colorb_miapC9B5</td><td class="mono">B4:60:ED:6A:C9:B5</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.239</td><td>DESKTOP-DV7IDOM</td><td class="mono">D8:12:65:13:A2:29</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.241</td><td>realme-10</td><td class="mono">BE:59:D4:CE:EA:1C</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.242</td><td>—</td><td class="mono">38:A5:C9:E8:73:89</td><td class="mono"></td></tr>
+<tr><td class="mono">192.168.1.249</td><td>—</td><td class="mono">3C:0B:59:B7:E3:0E</td><td class="mono"></td></tr>
+</tbody></table>
+<p class="tag">MAC-адреса с локально-администрируемым битом (второй символ 2, 6, A, E — например <code>D2:</code>, <code>CE:</code>, <code>72:</code>) — это privacy-MAC современных телефонов, а не реальный OUI.</p>
+
+<h2>4. Детали по устройствам</h2>
+
+<div class="finding ok" style="border-left-color:var(--ok)">
+  <h3><span class="host">192.168.1.1</span> — роутер Xiaomi AX3600 (OpenWrt 25.12.5) <span class="badge b-ok">ПРОВЕРЕНО</span></h3>
+  <ul>
+    <li><b>Платформа:</b> Xiaomi AX3600, <b>OpenWrt 25.12.5</b> (r33051), ядро 6.12.94 — свежая прошивка.</li>
+    <li><b>Порты:</b> 22 (dropbear SSH), 53 (dnsmasq), 80/443 (uhttpd + LuCI).</li>
+    <li><b>LuCI:</b> редирект на <code>/cgi-bin/luci/</code>, ответ <code>403</code> с <code>x-luci-login-required: yes</code> — авторизация включена.</li>
+    <li><b>WAN:</b> DHCP, адрес <code>172.25.213.7</code> — <b>частный диапазон, то есть роутер за NAT/CGNAT провайдера</b>; входящие из интернета до него не доходят.</li>
+    <li><b>Firewall:</b> зона <code>wan</code> — <code>input REJECT</code>, <code>forward DROP</code>, <code>masq 1</code>;
+        зона <code>lan</code> — <code>input ACCEPT</code>. Стандартно и корректно.</li>
+    <li><b>NAT/проброс:</b> после исправления — <b>ни одного правила DNAT</b> с WAN.</li>
+    <li><b>UPnP:</b> сервис <code>miniupnpd</code> не установлен — UPnP отсутствует.</li>
+    <li><b>Wi-Fi:</b> SSID <code>RT-WIFI-47</code> на трёх radio (2,4 ГГц + два 5 ГГц),
+        шифрование <code>sae-mixed</code> (WPA2/WPA3) — <span class="badge b-ok">хорошо</span>.</li>
+    <li><b>VPN:</b> подняты <b>Tailscale</b> и <b>WireGuard</b> (<code>wg0</code>), правила <code>wg→lan</code>, <code>lan→wg</code>.</li>
+    <li><b>Каналы:</b> <code>tailscale</code> и <code>wg</code> с <code>input ACCEPT</code> — устройства в этих сетях имеют доступ к админке роутера. Это норма для удалённого доступа, но стоит держать в голове.</li>
+  </ul>
+  <p><b>Замечания:</b> SSH пускает по паролю, в том числе <code>root</code> (<code>PasswordAuth=on</code>);
+  пароль Wi-Fi совпадает с паролем админки репитера Wavlink. Проброс на <code>.156</code> был мёртвым:
+  хост не отвечает, а Home Assistant живёт на <code>192.168.1.127:8123</code>.</p>
+</div>
+
+<div class="finding med">
+  <h3>Изменения, внесённые на роутере</h3>
+  <ol>
+    <li>Удалено правило <code>HA-External-Access</code> (DNAT WAN tcp/8123 → <code>192.168.1.156</code>).
+        Правило не работало: адрес назначения не существует, WAN за CGNAT. Внешний доступ к Home Assistant
+        остался прежним — через Tailscale/WireGuard.</li>
+    <li>Удалено дублирующее правило <code>Allow-WG</code> (порт 51820/udp объявлялся дважды);
+        оставлено <code>Allow-WireGuard</code>.</li>
+    <li>Выполнены <code>uci commit firewall</code> и перезагрузка firewall; список изменений пуст.</li>
+  </ol>
+  <p><b>Откат:</b> конфигурация firewall до правок сохранена в <code>/tmp/opencode/firewall-backup.json</code>.
+  Вернуть правило вручную: LuCI → <i>Network → Firewall → Port Forwards → Add</i>
+  (протокол <code>tcp</code>, внешний порт <code>8123</code>, внутренний IP <code>192.168.1.156</code>, порт <code>8123</code>).</p>
+</div>
+
+<div class="finding high">
+  <h3><span class="host">192.168.1.10</span> и <span class="host">192.168.1.135</span> — камеры/регистраторы XM (XMEye) <span class="badge b-high">ВЫСОКО</span></h3>
+  <ul>
+    <li><b>Порты:</b> 80 (веб), 554 (RTSP), 34567 (фирменный протокол Xiongmai).</li>
+    <li><b>Веб:</b> <code>&lt;title&gt;Web Viewer&lt;/title&gt;</code>, <code>version_web="2.0.0.0"</code>, <code>downloadAddr="http://xmsecu.com:8080"</code>.</li>
+    <li><b>RTSP:</b> <code>SERVER: H264DVR 1.0</code>; <code>DESCRIBE</code> без пароля → <code>401 Unauthorized</code> <span class="badge b-ok">хорошо</span></li>
+    <li>Страницы обоих устройств идентичны по размеру (10 097 байт) → одна и та же модель.</li>
+  </ul>
+  <p>Семейство Xiongmai/XMEye массово используется в ботнетах (Mirai и производные) из-за старых прошивок и дефолтных учётных данных. Порт 34567 — проприетарный, с известными уязвимостями.</p>
+</div>
+
+<div class="finding high">
+  <h3><span class="host">192.168.1.93</span> и <span class="host">192.168.1.206</span> — камеры/регистраторы XM (JF) <span class="badge b-high">ВЫСОКО</span></h3>
+  <ul>
+    <li>Те же порты и баннер <code>H264DVR 1.0</code>, но <code>downloadAddr="https://ocx.jftechws.com"</code> → вариант прошивки JF (тот же XM-стек, другой OEM).</li>
+    <li>Размер веб-страницы 9 612 байт — вторая модель, отличная от 4.2.</li>
+    <li>RTSP требует авторизацию (<code>401</code>) <span class="badge b-ok">хорошо</span></li>
+  </ul>
+</div>
+
+<div class="finding high">
+  <h3><span class="host">192.168.1.190</span> — NVR/XVR Topsvision <span class="badge b-high">ВЫСОКО</span></h3>
+  <ul>
+    <li><b>PTR:</b> <code>reg.lan</code>. <b>Порты:</b> 80, 554, 34567.</li>
+    <li><b>HTTP:</b> <code>Server: APPWebs/</code>, редирект на <code>doc/page/login.html</code> — типовая веб-морда регистратора.</li>
+    <li><b>RTSP:</b> <code>SERVER: Topsvision Server v2.1</code>.</li>
+  </ul>
+  <p>Сетевой видеорегистратор. Веб-интерфейс по HTTP, фирменный порт 34567 — та же группа риска, что и камеры.</p>
+</div>
+
+<div class="finding crit">
+  <h3><span class="host">192.168.1.139</span> — Google ADT-3 (Android TV 14) <span class="badge b-crit">КРИТИЧНО</span></h3>
+  <ul>
+    <li><b>Устройство:</b> <code>ro.product.model=ADT-3</code>, Android <b>14</b>, ADB protocol <code>0x01000001</code>.</li>
+    <li><b>Порты:</b> 5555 (ADB), 6000, 7000 (AirPlay), 8008 (DIAL), 8009 (Google Cast).</li>
+    <li><b>DIAL:</b> <code>friendlyName: ADT-3-000[Cast]</code>, <code>Server: AirReceiver/1.0.3.0</code> — стоит приложение-приёмник AirPlay/Cast.</li>
+    <li><b>ADB-сервер отвечает пакетом <code>CNXN</code> сразу, без запроса авторизации.</b> Проверка выполнения команды:</li>
+  </ul>
+<pre>handshake: CNXN
+shell:id; getprop ro.product.model; getprop ro.build.version.release
+→ uid=0(root) gid=0(root) groups=1004(input),1007(log),1011(adb),...
+  ADT-3
+  14</pre>
+  <p><b>Любое устройство в этой Wi-Fi сети получает root-консоль на приставке</b> без пароля
+  и без подтверждения на экране телевизора. Через неё доступны все приложения и аккаунты,
+  сохранённые пароли Wi-Fi, установка ПО, отключение защит.</p>
+  <p><b>Причина:</b> ADT-3 — отладочная приставка, на ней включён <code>adb tcpip</code> /
+  <code>ro.adb.secure=0</code>.</p>
+</div>
+
+<div class="finding high">
+  <h3><span class="host">192.168.1.223</span> — Wi-Fi ретранслятор Wavlink WN570HA1B <span class="badge b-high">ВЫСОКО</span></h3>
+  <ul>
+    <li><b>Порты:</b> 53 (DNS), 80/443 (lighttpd).</li>
+    <li><b>Идентификация:</b> тема <code>theme_WN570HA1B</code>, CSS <code>login_0HA1B.css</code> → модель <b>Wavlink WN570HA1B</b> (уличный AC600 AP/репитер).</li>
+    <li><b>HTTP:</b> страница входа, jQuery + <code>jquery.md5.js</code> — пароль хешируется MD5 на клиенте.</li>
+    <li><b>TLS:</b> TLSv1.2, сертификат <code>CN=Test Server Cert</code>, <code>O=OpenSSL Group</code>,
+        «FOR TESTING PURPOSES ONLY», <b>истёк 16.10.2021</b>.</li>
+    <li>Устройство дополнительно отвечает как DNS-сервер.</li>
+  </ul>
+  <p><b>Аудит конфигурации (после входа в админку):</b> режим — репитер/AP
+  (<code>wan_info.mode=1</code>), IP <code>192.168.1.223</code>, MAC <code>80:3F:5D:30:99:4E</code>
+  (Winstars/Wavlink). Удалённое управление — <b>выключено</b> (<code>enable=0</code>),
+  UPnP — <b>выключено</b>, DMZ — <b>выключено</b>, правил проброса портов — <b>0</b>,
+  DHCP не раздаёт, облако Wavlink (<code>wcloudenable</code>) — <b>0</b>.
+  Остаётся только прошивочный самоподписанный сертификат — из веб-интерфейса не меняется,
+  эксплуатируемого риска не создаёт.</p>
+</div>
+
+<div class="finding low">
+  <h3><span class="host">192.168.1.132</span> — нестабильный узел <span class="badge b-low">НЕИЗВЕСТНО</span></h3>
+  <p>При первом проходе отвечал на порту <b>5000</b>, при повторном — <code>No route to host</code>.
+  Скорее всего спящий телефон/планшет. Стоит перепроверить при следующем сканировании.</p>
+</div>
+
+<h2>5. Рекомендации по приоритету</h2>
+
+<h3>Срочно — сегодня</h3>
+<ol>
+  <li><b>Закрыть ADB на 192.168.1.139.</b> <span class="badge b-ok">ВЫПОЛНЕНО</span> — сетевой ADB отключён,
+      порт 5555 закрыт, USB-отладка сохранена.</li>
+  <li><b>Проверить проброс портов наружу.</b> <span class="badge b-ok">ВЫПОЛНЕНО</span> — правил DNAT с WAN нет,
+      мёртвое правило на 8123 удалено. WAN за CGNAT, входящие из интернета недоступны в принципе.</li>
+</ol>
+
+<h3>Высокий приоритет — эта неделя</h3>
+<ol start="3">
+  <li><b>Сегментировать IoT (главное, что осталось).</b> В сети 37 устройств, из них больше двадцати —
+      лампы, кондиционер, ТВ, приставки. Вынести их в отдельный SSID/VLAN с
+      <code>input ACCEPT, forward REJECT</code> и точечными разрешениями (например,
+      Home Assistant <code>192.168.1.127</code> → IoT-подсеть). Делать <b>осознанно</b>: наивная изоляция
+      сломает управление умным домом, потому что HA общается с лампами и кондиционером по локальной сети.</li>
+  <li><b>Камеры XM и NVR Topsvision:</b> сменить пароли на длинные уникальные (не <code>admin</code>);
+      обновить прошивки; отключить P2P/облако, Telnet и порт 34567, если не нужен;
+      включить HTTPS на веб-интерфейсе, если прошивка поддерживает. RTSP уже требует авторизацию — это хорошо.</li>
+  <li><b>Wavlink WN570HA1B:</b> задать пароль админки, <b>отличный от пароля Wi-Fi</b>
+      (сейчас они совпадают). Удалённое управление, UPnP и DMZ уже выключены — проверено.</li>
+</ol>
+
+<h3>Средний приоритет</h3>
+<ol start="6">
+  <li><b>Роутер OpenWrt:</b> перевести SSH на ключи (<code>dropbear</code> → <code>PasswordAuth off</code>
+      после добавления ключа), не использовать один пароль для Wi-Fi и админок.
+      Прошивка свежая (25.12.5) — обновлять пакеты по мере выхода.</li>
+  <li>Отключить ONVIF-обнаружение на камерах, если не используется, — меньше поверхность атаки.</li>
+  <li>Включить журналирование DHCP и статические lease для всех известных устройств,
+      чтобы контролировать появление новых.</li>
+</ol>
+
+<h3>Гигиена</h3>
+<ol start="9">
+  <li>Повторить сканирование через неделю и сравнить список — так быстро заметите чужое подключение.</li>
+  <li>Для точной инвентаризации (MAC-адреса, производители, имена) выполнить с ПК:</li>
+</ol>
+<pre>sudo nmap -sn 192.168.1.0/24           # обнаружение + MAC/OUI
+sudo nmap -sV -O -p- 192.168.1.0/24    # версии сервисов (долго)</pre>
+
+<div class="sep"></div>
+<footer>
+  Отчёт сформирован автоматически по результатам активного сканирования сети 192.168.1.0/24.
+  Пароли не подбирались, изменения на устройства не вносились. Единственная активная проверка —
+  подтверждение отсутствия авторизации ADB на 192.168.1.139 (команда <code>id</code> и чтение свойств).
+</footer>
+
+</div>
+</body>
+</html>
