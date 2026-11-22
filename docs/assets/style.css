@@ -73,6 +73,19 @@ main { max-width: 900px; margin: 0 auto; padding: 24px 16px 40px; }
 .math-line { font-size: 2rem; font-weight: 700; text-align: center; margin: 20px 0; }
 .answer-input { font-size: 1.5rem; padding: 10px; width: 150px; text-align: center; border: 2px solid #e0d8c2; border-radius: 10px; }
 .word-card { text-align: center; padding: 24px; font-size: 2rem; font-weight: 700; }
+.journal { margin-top: 36px; background: #fff; border-radius: 16px; padding: 20px 24px; box-shadow: var(--shadow); }
+.journal h3 { margin-top: 0; }
+.journal.parent { background: #eef6ff; }
+.journal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.ghost { background: #95a5a6; }
+textarea { width: 100%; padding: 10px; border: 2px solid #e0d8c2; border-radius: 10px; font-family: monospace; font-size: .85rem; }
+.report-subject { border-left: 4px solid #e74c3c; padding: 10px 14px; margin: 12px 0; background: #fff7f6; border-radius: 8px; }
+.report-subject.clean { border-left-color: #2ecc71; background: #f0faf3; }
+.report-subject h4 { margin: 0 0 8px; }
+.error-item { margin: 8px 0; font-size: .95rem; }
+.error-item .wrong { color: #c0392b; font-weight: 700; }
+.error-item .right { color: #27ae60; font-weight: 700; }
+.error-item .why { color: #555; font-size: .88rem; }
 .how { margin-top: 36px; background: #fffbe9; border-radius: 16px; padding: 20px 24px; }
 .how h3 { margin-top: 0; }
 footer { text-align: center; color: #999; font-size: .85rem; padding: 20px; }
