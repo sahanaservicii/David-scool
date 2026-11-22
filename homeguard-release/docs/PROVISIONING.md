@@ -10,7 +10,7 @@
 
 ## 1. Консоль
 
-1. Установите `dist/console-1.4.1.apk`, откройте, разрешите уведомления.
+1. Установите `dist/console-1.4.2.apk`, откройте, разрешите уведомления.
 2. Убедитесь, что на экране: `Сервер: http://<ip>:8787`, состояние «сервер
    работает».
 3. «Проверить сервер» → «сервер отвечает: OK».
@@ -24,7 +24,7 @@
 
 ```bash
 adb devices
-adb install -r dist/agent-1.3.1.apk
+adb install -r dist/agent-1.3.2.apk
 # до добавления аккаунтов и без второго пользователя:
 adb shell dpm set-device-owner ru.homeguard.agent/.GuardReceiver
 ```
@@ -67,12 +67,12 @@ some accounts on the device` — сделайте сброс и не добав�
 
 ```bash
 # на машине с APK, в той же LAN:
-python3 tools/provision.py --apk dist/agent-1.3.1.apk \
+python3 tools/provision.py --apk dist/agent-1.3.2.apk \
     --console 192.168.1.10:8787 --device-id kid-ab12 \
     --code ABCD-EFGH-JKLM-NPQR --json --serve
 ```
 
-Скрипт печатает extras и раздаёт APK по `http://<ip>:8000/agent-1.3.1.apk`.
+Скрипт печатает extras и раздаёт APK по `http://<ip>:8000/agent-1.3.2.apk`.
 Полученную строку закодируйте любым офлайн-QR (`qrencode`, приложение на
 телефоне) и на экране приветствия свежесброшенного телефона нажмите 6 раз в
 одно и то же место → сканер QR.

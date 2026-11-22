@@ -31,13 +31,13 @@ sh tools/build.sh         # подписанный релиз + dist/ + SHA256SU
 `tools/*.sh` читают `ANDROID_SDK_ROOT`/`ANDROID_HOME`, `JAVA_HOME` и `GRADLE`
 (по умолчанию `gradle` из PATH). Результат:
 
-* `agent/build/outputs/apk/release/agent-release.apk` → `dist/agent-1.3.1.apk`
-* `console/build/outputs/apk/release/console-release.apk` → `dist/console-1.4.1.apk`
+* `agent/build/outputs/apk/release/agent-release.apk` → `dist/agent-1.3.2.apk`
+* `console/build/outputs/apk/release/console-release.apk` → `dist/console-1.4.2.apk`
 
 Проверка подписанного APK:
 
 ```bash
-"$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify -v dist/agent-1.3.1.apk
+"$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify -v dist/agent-1.3.2.apk
 ```
 
 ## Ключ подписи

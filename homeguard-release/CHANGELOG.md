@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.4.1 / 1.3.1 — 2026-11-22 (фикс Android 16)
+## 1.4.2 / 1.3.2 — 2026-11-22 (фикс Android 16)
 
 * Исправлен краш консоли «seal failed» на Android 16 (sdk 36, keystore2):
   `InvalidAlgorithmParameterException: Caller-provided IV not permitted`.
@@ -10,6 +10,9 @@
 * То же исправление в агенте (`Store.setSecret`). `Backup` не тронут: там ключ
   по паролю, caller-provided IV допустим.
 * Добавлен статический guard в `tools/test.sh`, не дающий вернуть баг.
+* Подняты `versionCode` (консоль 8, агент 7) и версии до 1.4.2 / 1.3.2: при
+  ручной установке APK с прежним `versionCode` старый код не заменялся и краш
+  повторялся, хотя файл с фиксом уже был скопирован на телефон.
 
 ## 1.4.1 / 1.3.1 — 2026-11-21 (QR-привязка)
 
