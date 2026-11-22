@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Учусь с удовольствием — интерактивные домашки</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">🎒 Учусь с удовольствием</div>
+    <div class="stars">⭐ <span id="totalStars">0</span></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Привет, <span id="childName">друг</span>! 👋</h1>
+      <p>Сегодня у нас интересные задания. Выбирай предмет — и вперёд!</p>
+      <div class="progress-wrap">
+        <div class="progress-label">Прогресс домашки <span id="progressText">0 / 0</span></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </section>
+
+    <section id="subjects" class="subjects"></section>
+
+    <section id="game" class="game hidden">
+      <button class="back" onclick="Game.close()">← Назад к предметам</button>
+      <h2 id="gameTitle"></h2>
+      <p id="gameHint" class="hint"></p>
+      <div id="gameBody"></div>
+    </section>
+
+    <section class="how">
+      <h3>Как это работает</h3>
+      <ol>
+        <li>Папа присылает домашку — и на сайте появляется новый день с заданиями.</li>
+        <li>Ты выбираешь предмет и играешь: отвечаешь на вопросы, решаешь примеры, учишь слова.</li>
+        <li>За правильные ответы ты получаешь звёздочки. Звёздочки сохраняются в этом браузере.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>Сделано с заботой об обучении · работает офлайн</footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
