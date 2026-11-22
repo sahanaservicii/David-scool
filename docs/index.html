@@ -7,62 +7,93 @@
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo">🎒 Учусь с удовольствием</div>
-    <div class="stars">⭐ <span id="totalStars">0</span></div>
-  </header>
+  <!-- Выбор роли -->
+  <div id="roleGate" class="role-gate">
+    <div class="role-card">
+      <div class="role-logo">🎒</div>
+      <h1>Учусь с удовольствием</h1>
+      <p>Кто открыл сайт?</p>
+      <button class="role-btn child" onclick="App.enterChild()">🧒 Я ребёнок</button>
+      <button class="role-btn parent" onclick="App.askPin()">👨 Я папа</button>
+    </div>
+  </div>
 
-  <main>
-    <section class="hero">
-      <h1>Привет, <span id="childName">друг</span>! 👋</h1>
-      <p>Сегодня у нас интересные задания. Выбирай предмет — и вперёд!</p>
-      <div class="progress-wrap">
-        <div class="progress-label">Прогресс домашки <span id="progressText">0 / 0</span></div>
-        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <!-- Вход папы по PIN -->
+  <div id="pinGate" class="role-gate hidden">
+    <div class="role-card">
+      <h2>👨 Вход для папы</h2>
+      <p class="hint">Введите PIN (по умолчанию 2311 — поменять можно в data.js)</p>
+      <input id="pinInput" class="answer-input" type="password" inputmode="numeric" maxlength="8" placeholder="PIN">
+      <button class="next" id="pinBtn">Войти</button>
+      <button class="back" onclick="App.backToGate()">← Назад</button>
+      <div id="pinError" class="wrong"></div>
+    </div>
+  </div>
+
+  <div id="appRoot" class="hidden">
+    <header class="topbar">
+      <div class="logo">🎒 Учусь с удовольствием</div>
+      <div class="top-actions">
+        <span class="stars">⭐ <span id="totalStars">0</span></span>
+        <button class="switch-role" onclick="App.backToGate()">Сменить роль</button>
       </div>
-    </section>
+    </header>
 
-    <section id="subjects" class="subjects"></section>
+    <!-- Экран ребёнка -->
+    <main id="childView">
+      <section class="hero">
+        <h1>Привет, <span id="childName">друг</span>! 👋</h1>
+        <p>Сегодня у нас интересные задания. Выбирай предмет — и вперёд!</p>
+        <div class="progress-wrap">
+          <div class="progress-label">Прогресс домашки <span id="progressText">0 / 0</span></div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+      </section>
 
-    <section id="game" class="game hidden">
-      <button class="back" onclick="Game.close()">← Назад к предметам</button>
-      <h2 id="gameTitle"></h2>
-      <p id="gameHint" class="hint"></p>
-      <div id="gameBody"></div>
-    </section>
+      <section id="subjects" class="subjects"></section>
 
-    <section class="journal" id="journal">
-      <h3>📋 Журнал ошибок</h3>
-      <p class="hint">Здесь всегда видно, где была ошибка и как надо правильно. Данные хранятся в этом браузере.</p>
-      <div id="journalBody"></div>
-      <div class="journal-actions">
-        <button class="next" id="copyReportBtn">Скопировать отчёт для папы</button>
-        <button class="next ghost" id="clearReportBtn">Очистить журнал</button>
+      <section id="game" class="game hidden">
+        <button class="back" onclick="Game.close()">← Назад к предметам</button>
+        <h2 id="gameTitle"></h2>
+        <p id="gameHint" class="hint"></p>
+        <div id="gameBody"></div>
+      </section>
+
+      <section class="journal" id="journal">
+        <h3>📋 Журнал ошибок</h3>
+        <p class="hint">Здесь всегда видно, где была ошибка и как надо правильно.</p>
+        <div id="journalBody"></div>
+        <div class="journal-actions">
+          <button class="next" id="showQrBtn">📷 Показать QR-код отчёта</button>
+          <button class="next ghost" id="clearReportBtn">Очистить журнал</button>
+        </div>
+      </section>
+
+      <div id="qrModal" class="modal hidden">
+        <div class="modal-card">
+          <h3>Отправь этот QR папе 📷</h3>
+          <div class="qr-box" id="qrBox"></div>
+          <p class="hint">Папа сканирует камерой — получит короткий код отчёта.</p>
+          <div class="code-line" id="compactCode"></div>
+          <button class="next" onclick="document.getElementById('qrModal').classList.add('hidden')">Закрыть</button>
+        </div>
       </div>
-      <div id="copyStatus" class="hint"></div>
-    </section>
+    </main>
 
-    <section class="journal parent">
-      <h3>👨 Для папы: посмотреть отчёт ребёнка</h3>
-      <p class="hint">Ребёнок присылает вам скопированный код — вставьте его сюда и нажмите «Показать разбор».</p>
-      <textarea id="reportInput" rows="3" placeholder="Вставьте код отчёта (начинается с SCHOOL1:)"></textarea>
-      <button class="next" id="showReportBtn">Показать разбор</button>
-      <div id="parentReport"></div>
-    </section>
-
-    <section class="how">
-      <h3>Как это работает</h3>
-      <ol>
-        <li>Папа присылает домашку — и на сайте появляется новый день с заданиями.</li>
-        <li>Ты выбираешь предмет и играешь: отвечаешь на вопросы, решаешь примеры, учишь слова.</li>
-        <li>Если ошибся — сразу видно правильный ответ и объяснение. Всё сохраняется в журнале ошибок.</li>
-      </ol>
-    </section>
-  </main>
-
-  <footer>Сделано с заботой об обучении · работает офлайн</footer>
+    <!-- Экран папы -->
+    <main id="parentView" class="hidden">
+      <section class="journal parent">
+        <h3>👨 Разбор домашки</h3>
+        <p class="hint">Отсканируйте QR ребёнка камерой и вставьте полученный код сюда.</p>
+        <textarea id="reportInput" rows="3" placeholder="Например: S2|ru=1:2,3:0|math=12+5:16"></textarea>
+        <button class="next" id="showReportBtn">Показать разбор</button>
+        <div id="parentReport"></div>
+      </section>
+    </main>
+  </div>
 
   <script src="assets/data.js"></script>
+  <script src="assets/qr.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>
