@@ -404,6 +404,14 @@ public final class Ui {
         Toast.makeText(c, s, Toast.LENGTH_SHORT).show();
     }
 
+    public static void copy(Context c, String text) {
+        try {
+            android.content.ClipboardManager cm =
+                    (android.content.ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);
+            if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("HomeGuard", text == null ? "" : text));
+        } catch (Exception ignored) {}
+    }
+
     public static void openSettings(Activity a, String action, String pkg) {
         try {
             Intent i = new Intent(action);

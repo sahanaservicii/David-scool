@@ -316,6 +316,36 @@ public class MainActivity extends Activity {
                                 boolean battery, boolean adb) {
         checklist.removeAllViews();
 
+        // Мастер: одна кнопка ведёт к следующему незавершённому системному экрану.
+        final java.util.List<Runnable> pending = new java.util.ArrayList<>();
+        final java.util.List<String> pendingNames = new java.util.ArrayList<>();
+        addPending(pending, pendingNames, !(owner || admin), "Права владельца", new Runnable() { @Override public void run() { askAdmin(); } });
+        addPending(pending, pendingNames, !paired, "Привязка к консоли", new Runnable() { @Override public void run() { scrollToPairing(); } });
+        addPending(pending, pendingNames, !notif, "Уведомления", new Runnable() { @Override public void run() { askNotifications(); } });
+        addPending(pending, pendingNames, !loc, "Геолокация", new Runnable() { @Override public void run() { askLocation(); } });
+        addPending(pending, pendingNames, !usage, "Статистика использования", new Runnable() { @Override public void run() { Ui.openSettings(MainActivity.this, Settings.ACTION_USAGE_ACCESS_SETTINGS, null); } });
+        addPending(pending, pendingNames, !a11y, "Специальные возможности", new Runnable() { @Override public void run() { Ui.openSettings(MainActivity.this, Settings.ACTION_ACCESSIBILITY_SETTINGS, null); } });
+        addPending(pending, pendingNames, !overlay, "Поверх других окон", new Runnable() { @Override public void run() { openOverlay(); } });
+        addPending(pending, pendingNames, !battery, "Батарея без ограничений", new Runnable() { @Override public void run() { askBattery(); } });
+        addPending(pending, pendingNames, adb, "Выключить ADB-отладку", new Runnable() { @Override public void run() { Ui.openSettings(MainActivity.this, Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS, null); } });
+
+        LinearLayout wizard = Ui.col(this);
+        wizard.setBackground(Ui.round(this, pending.isEmpty() ? 0x1422C55E : 0x14FF8A4C, 14));
+        Ui.pad(wizard, this, 14, 14, 14, 14);
+        wizard.addView(Ui.txt(this, pending.isEmpty() ? "Настройка завершена" : "Мастер настройки", 15, Ui.INK, true));
+        wizard.addView(Ui.txt(this,
+                pending.isEmpty() ? "Все нужные доступы выданы. Можно проверить подключение к консоли."
+                        : "Осталось шагов: " + pending.size() + ". Нажмите кнопку — откроется нужный системный экран. После возврата перейдите к следующему.",
+                12.5f, Ui.MUTED, false), lp(0, 4));
+        if (!pending.isEmpty()) {
+            wizard.addView(Ui.txt(this, "Сейчас: " + pendingNames.get(0), 12.5f, Ui.INK2, true), lp(0, 6));
+            wizard.addView(Ui.primary(this, "Продолжить настройку", new View.OnClickListener() {
+                @Override public void onClick(View v) { pending.get(0).run(); }
+            }), lp(0, 10));
+        }
+        checklist.addView(wizard);
+        checklist.addView(Ui.divider(this));
+
         addRow(checklist, R.drawable.ic_shield, "Права владельца устройства",
                 owner ? "Управление телефоном включено"
                         : admin ? "Есть только админ-права (ограничено)"
@@ -418,6 +448,23 @@ public class MainActivity extends Activity {
                 state, stateColor, l));
     }
 
+    private void addPending(java.util.List<Runnable> pending, java.util.List<String> names,
+                            boolean needed, String name, Runnable action) {
+        if (!needed) return;
+        pending.add(action);
+        names.add(name);
+    }
+
+    private void openOverlay() {
+        try {
+            Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            i.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(i);
+        } catch (Exception e) {
+            Ui.toast(MainActivity.this, "Настройки → Приложения → Спец. доступ");
+        }
+    }
+
     // ------------------------------------------------------------ diagnostics
 
     private void buildDiagnostics() {
@@ -428,10 +475,36 @@ public class MainActivity extends Activity {
         String srv = Store.serverUrl(this);
         diagRow("Сервер", srv == null ? "не привязан"
                 : srv.replace("http://", "") + (Store.servers(this).size() > 1 ? " +" : ""));
+        diagRow("Результат sync", SyncService.lastResult(this));
         diagRow("Гео", LocationReporter.providerHint(this));
         diagRow("Экран сегодня", Ui.minutes(Usage.totalMs(this) / 60000L));
         diagRow("Блокировка", LockState.locked ? lockText() : "нет");
         diagRow("Синхронизация", ago(Store.getLong(this, "last_sync", 0)));
+
+        // Кнопка копировать диагностику — чтобы родитель мог переслать текст.
+        LinearLayout actions = Ui.row(this);
+        Ui.pad(actions, this, 0, 10, 0, 0);
+        actions.addView(Ui.ghost(this, "Копировать диагностику", new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                Ui.copy(MainActivity.this, diagText());
+                Ui.toast(MainActivity.this, "Скопировано");
+            }
+        }), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        diagnostics.addView(actions);
+    }
+
+    private String diagText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("HomeGuard agent\n");
+        sb.append("Android ").append(Build.VERSION.RELEASE).append(" SDK ").append(Build.VERSION.SDK_INT).append('\n');
+        sb.append("Model ").append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append('\n');
+        sb.append("Device ").append(Store.deviceId(this)).append('\n');
+        sb.append("Servers ").append(Store.servers(this)).append('\n');
+        sb.append("Active ").append(Store.get(this, "server_active", "-")).append('\n');
+        sb.append("LastSync ").append(ago(Store.getLong(this, "last_sync", 0))).append('\n');
+        sb.append("Result ").append(SyncService.lastResult(this)).append('\n');
+        sb.append("PolicyV ").append(Store.getInt(this, "policy_v", -1)).append('\n');
+        return sb.toString();
     }
 
     private void diagRow(String label, String value) {

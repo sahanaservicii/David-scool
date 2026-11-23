@@ -24,7 +24,7 @@
 
 ```bash
 adb devices
-adb install -r dist/agent-1.3.2.apk
+adb install -r dist/agent-1.4.0.apk
 # до добавления аккаунтов и без второго пользователя:
 adb shell dpm set-device-owner ru.homeguard.agent/.GuardReceiver
 ```
@@ -67,12 +67,12 @@ some accounts on the device` — сделайте сброс и не добав�
 
 ```bash
 # на машине с APK, в той же LAN:
-python3 tools/provision.py --apk dist/agent-1.3.2.apk \
+python3 tools/provision.py --apk dist/agent-1.4.0.apk \
     --console 192.168.1.10:8787 --device-id kid-ab12 \
     --code ABCD-EFGH-JKLM-NPQR --json --serve
 ```
 
-Скрипт печатает extras и раздаёт APK по `http://<ip>:8000/agent-1.3.2.apk`.
+Скрипт печатает extras и раздаёт APK по `http://<ip>:8000/agent-1.4.0.apk`.
 Полученную строку закодируйте любым офлайн-QR (`qrencode`, приложение на
 телефоне) и на экране приветствия свежесброшенного телефона нажмите 6 раз в
 одно и то же место → сканер QR.

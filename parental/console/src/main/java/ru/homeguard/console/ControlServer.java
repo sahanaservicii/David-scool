@@ -75,6 +75,7 @@ public class ControlServer {
             socket.setReuseAddress(true);
             socket.bind(new InetSocketAddress(PORT));
             running = true;
+            ServerLog.i("сервер слушает :" + PORT);
             accept = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -84,12 +85,14 @@ public class ControlServer {
             accept.start();
         } catch (Exception e) {
             lastError = e.getClass().getSimpleName() + ": " + e.getMessage();
+            ServerLog.e("старт не удался: " + lastError);
             running = false;
         }
     }
 
     public synchronized void stop() {
         running = false;
+        ServerLog.w("сервер остановлен");
         try {
             if (socket != null) socket.close();
         } catch (Exception ignored) {}
@@ -102,9 +105,9 @@ public class ControlServer {
             try {
                 final Socket s = socket.accept();
                 if (!isPrivatePeer(s.getInetAddress())) {
-                    try {
-                        s.close();
-                    } catch (Exception ignored) {}
+                    String ip = s.getInetAddress() == null ? "?" : s.getInetAddress().getHostAddress();
+                    ServerLog.w("отклонён не-LAN peer " + ip);
+                    try { s.close(); } catch (Exception ignored) {}
                     continue;
                 }
                 s.setSoTimeout(8000);
@@ -113,16 +116,18 @@ public class ControlServer {
                     public void run() {
                         try {
                             handle(s);
-                        } catch (Exception ignored) {
+                        } catch (Exception e) {
+                            ServerLog.w("handle: " + e.getClass().getSimpleName());
                         } finally {
-                            try {
-                                s.close();
-                            } catch (Exception ignored) {}
+                            try { s.close(); } catch (Exception ignored) {}
                         }
                     }
                 });
             } catch (Exception e) {
-                if (running) lastError = String.valueOf(e.getMessage());
+                if (running) {
+                    lastError = String.valueOf(e.getMessage());
+                    ServerLog.w("accept: " + e.getClass().getSimpleName());
+                }
             }
         }
     }
@@ -177,7 +182,9 @@ public class ControlServer {
         byte[] raw = readFully(in, len, deadline);
         String body = new String(raw, "UTF-8");
 
+        String peer = s.getInetAddress() == null ? "?" : s.getInetAddress().getHostAddress();
         if ("GET".equals(method) && Protocol.PATH_PING.equals(path)) {
+            ServerLog.i("ping от " + peer);
             JSONObject o = new JSONObject();
             o.put("ok", true);
             o.put("app", "homeguard-console");
@@ -187,6 +194,7 @@ public class ControlServer {
         }
 
         if (!"POST".equals(method)) {
+            ServerLog.w(peer + " " + method + " " + path + " -> 405");
             respond(s, 405, "{\"ok\":false,\"error\":\"method\"}", null, path);
             return;
         }
@@ -198,15 +206,19 @@ public class ControlServer {
 
         Db.Device d = device == null ? null : db.device(device);
         if (!verify(d, ts, nonce, sig, path, body)) {
+            ServerLog.w(peer + " " + path + " auth FAIL dev=" + (device == null ? "-" : device));
             respond(s, 401, "{\"ok\":false,\"error\":\"auth\"}", null, path);
             return;
         }
 
         if (Protocol.PATH_SYNC.equals(path)) {
+            ServerLog.i(peer + " sync OK dev=" + device);
             respond(s, 200, onSync(device, body).toString(), d, path);
         } else if (Protocol.PATH_ACK.equals(path)) {
+            ServerLog.i(peer + " ack OK dev=" + device);
             respond(s, 200, onAck(device, body).toString(), d, path);
         } else {
+            ServerLog.w(peer + " " + path + " -> 404");
             respond(s, 404, "{\"ok\":false,\"error\":\"not_found\"}", null, path);
         }
     }

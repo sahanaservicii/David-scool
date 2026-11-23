@@ -4,7 +4,7 @@
 агент на телефоне ребёнка (Device Owner). Connecting через LAN и WireGuard.
 **Никакого GitHub, облака, FCM и подписок.**
 
-Готовые APK: `dist/console-1.4.2.apk`, `dist/agent-1.3.2.apk`. Сначала консоль, потом агент.
+Готовые APK: `dist/console-1.4.2.apk`, `dist/agent-1.4.0.apk`. Сначала консоль, потом агент.
 
 ---
 
@@ -60,7 +60,7 @@ Device Owner можно поставить **только на свежесбр�
 
 ```bash
 adb devices
-adb install -r dist/agent-1.3.2.apk
+adb install -r dist/agent-1.4.0.apk
 adb shell dpm set-device-owner ru.homeguard.agent/.GuardReceiver
 ```
 
@@ -127,7 +127,7 @@ adb shell dpm set-device-owner ru.homeguard.agent/.GuardReceiver
 На дачном HA уже создана локальная автоматизация `homeguard_sos_bridge`.
 Чтобы SOS с телефона ребёнка попадал в HA:
 
-1. Обновите консоль до `console-1.5.0.apk` (старый `versionCode` 8 не заменится).
+1. Обновите консоль до `console-1.6.0.apk` (старый `versionCode` 8 не заменится).
 2. В консоли: **Настройки → Сервер**, поле «Мост в Home Assistant»:
    `http://192.168.1.156:8123/api/webhook/homeguard_sos_bridge` → **Сохранить**.
 3. Проверка (с роутера дачи):

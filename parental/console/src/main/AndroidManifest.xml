@@ -45,5 +45,6 @@
         <activity android:name=".PairingActivity" android:exported="false" android:label="Новый ребёнок" />
         <activity android:name=".EventsActivity" android:exported="false" android:label="События" />
         <activity android:name=".SettingsActivity" android:exported="false" android:label="Настройки" />
+        <activity android:name=".DiagActivity" android:exported="false" android:label="Диагностика" />
     </application>
 </manifest>

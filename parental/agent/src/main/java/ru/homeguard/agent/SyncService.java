@@ -39,6 +39,10 @@ public class SyncService extends Service {
     private android.net.ConnectivityManager.NetworkCallback netCallback;
     private volatile String lastResult = "не подключались";
 
+    public static String lastResult(Context c) {
+        return Store.get(c, "last_sync_result", "ещё не было");
+    }
+
     public static void start(Context c) {
         try {
             Intent i = new Intent(c, SyncService.class);
@@ -120,6 +124,10 @@ public class SyncService extends Service {
                 delay = 60_000L;
                 if (!isHomeNetwork()) delay = 120_000L;
             } catch (Exception e) {
+                String msg = e.getMessage();
+                if (msg == null || msg.isEmpty()) msg = e.getClass().getSimpleName();
+                if (msg.length() > 120) msg = msg.substring(0, 120);
+                Store.put(SyncService.this, "last_sync_result", "ошибка: " + msg);
                 delay = Math.min(nextDelay * 2, 240_000L);
             } finally {
                 nextDelay = delay;
@@ -174,11 +182,13 @@ public class SyncService extends Service {
         }
         if (resp == null) {
             lastResult = "нет связи (" + lastError + ")";
+            Store.put(c, "last_sync_result", lastResult);
             throw new IllegalStateException("no server: " + lastError);
         }
         Store.put(c, "server_active", used);
         if (!verifyResponse(secret, Protocol.PATH_SYNC, resp)) {
             lastResult = "ответ без подписи";
+            Store.put(c, "last_sync_result", lastResult);
             throw new IllegalStateException("unverified response");
         }
         JSONObject r = new JSONObject(resp.body);
@@ -187,6 +197,7 @@ public class SyncService extends Service {
         lastResult = "ok " + new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US)
                 .format(new java.util.Date());
         Store.putLong(c, "last_sync", System.currentTimeMillis());
+        Store.put(c, "last_sync_result", lastResult + " via " + used);
 
         JSONObject policy = r.optJSONObject("policy");
         if (policy != null) {

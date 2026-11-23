@@ -274,6 +274,14 @@ public class SettingsActivity extends Activity {
                     }
                 }));
         card.addView(Ui.divider(this));
+        card.addView(Ui.rowItem(this, R.drawable.ic_chart, "Диагностика сервера",
+                "подключения, ошибки, sync — онлайн", Ui.BLUE, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(new Intent(SettingsActivity.this, DiagActivity.class));
+                    }
+                }));
+        card.addView(Ui.divider(this));
         card.addView(Ui.rowItem(this, R.drawable.ic_warning, "Лог сбоев",
                 CrashLog.summary(this), Ui.MUTED, new View.OnClickListener() {
                     @Override

@@ -70,7 +70,7 @@ HomeGuard — офлайн-комплект из двух Android-приложе
 в мобильной сети, тело запроса ~1–3 КБ. На смену сети он реагирует сразу, backoff
 ограничен 4 минутами, необработанные события не теряются.
 
-Готовые APK лежат в `dist/`: `agent-1.3.2.apk` и `console-1.4.2.apk`. Контрольные
+Готовые APK лежат в `dist/`: `agent-1.4.0.apk` и `console-1.4.2.apk`. Контрольные
 суммы — `dist/SHA256SUMS`.
 
 ## Быстрый старт
@@ -109,7 +109,7 @@ HomeGuard — офлайн-комплект из двух Android-приложе
 
    ```bash
    adb devices
-   adb install -r dist/agent-1.3.2.apk
+   adb install -r dist/agent-1.4.0.apk
    adb shell dpm set-device-owner ru.homeguard.agent/.GuardReceiver
    ```
 
