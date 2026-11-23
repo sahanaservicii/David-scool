@@ -105,6 +105,7 @@ const App = {
     document.getElementById('pinBtn').onclick = this.checkPin.bind(this);
     document.getElementById('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') this.checkPin(); });
     this.renderSubjects();
+    this.renderLessonPanel();
     this.updateProgress();
     document.getElementById('totalStars').textContent = Store.stars();
     this.renderJournal();
@@ -156,6 +157,25 @@ const App = {
       el.onclick = () => Game.open(s);
       box.appendChild(el);
     });
+  },
+  // Сводка заданий в левом нижнем углу: дата + предметы + что задали
+  renderLessonPanel() {
+    const l = this.lesson;
+    if (!l) return;
+    document.getElementById('lpDate').textContent = `${l.date} · ${l.weekday}`;
+    const list = document.getElementById('lpList');
+    list.innerHTML = '';
+    l.subjects.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'lp-item';
+      el.innerHTML = `<div class="lp-name">${s.emoji} ${s.name}</div><div class="lp-task">${s.task}</div>`;
+      list.appendChild(el);
+    });
+  },
+  toggleLessonPanel() {
+    const panel = document.getElementById('lessonPanel');
+    const collapsed = panel.classList.toggle('collapsed');
+    panel.querySelector('.lp-toggle').textContent = collapsed ? '+' : '−';
   },
   updateProgress() {
     const total = this.lesson.subjects.length;

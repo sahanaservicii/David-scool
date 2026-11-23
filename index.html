@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Учусь с удовольствием — интерактивные домашки</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=20261123c">
 </head>
 <body>
   <!-- Выбор роли -->
@@ -52,6 +52,16 @@
 
       <section id="subjects" class="subjects"></section>
 
+      <!-- Сводка заданий: всегда видна в левом нижнем углу детского экрана -->
+      <aside id="lessonPanel" class="lesson-panel">
+        <div class="lp-head">
+          <strong>📌 Что задали</strong>
+          <button class="lp-toggle" onclick="App.toggleLessonPanel()" aria-label="Свернуть или развернуть">−</button>
+        </div>
+        <div class="lp-date" id="lpDate"></div>
+        <div id="lpList" class="lp-list"></div>
+      </aside>
+
       <section id="game" class="game hidden">
         <button class="back" onclick="Game.close()">← Назад к предметам</button>
         <h2 id="gameTitle"></h2>
@@ -94,8 +104,8 @@
 
   <!-- Версия в URL заставляет браузер брать свежие файлы, даже если старые закешированы GitHub Pages (max-age=600).
        Увеличивайте v= при каждом изменении data.js/app.js/qr.js. -->
-  <script src="assets/data.js?v=20261123b"></script>
-  <script src="assets/qr.js?v=20261123b"></script>
-  <script src="assets/app.js?v=20261123b"></script>
+  <script src="assets/data.js?v=20261123c"></script>
+  <script src="assets/qr.js?v=20261123c"></script>
+  <script src="assets/app.js?v=20261123c"></script>
 </body>
 </html>
