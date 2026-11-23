@@ -65,9 +65,24 @@ public class ScanActivity extends Activity {
 
         hint = Ui.txt(this, "Наведите камеру на QR-код в консоли родителя. Держите ровно.",
                 14, 0xFFFFFFFF, false);
-        hint.setPadding(Ui.dp(this, 20), Ui.dp(this, 16), Ui.dp(this, 20), Ui.dp(this, 24));
+        hint.setPadding(Ui.dp(this, 20), Ui.dp(this, 16), Ui.dp(this, 20), Ui.dp(this, 8));
         root.addView(hint, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        android.widget.Button manual = Ui.ghost(this, "Ввести код вручную", new android.view.View.OnClickListener() {
+            @Override public void onClick(android.view.View v) {
+                done = true;
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        });
+        manual.setTextColor(0xFFFFFFFF);
+        LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        mlp.leftMargin = Ui.dp(this, 20);
+        mlp.rightMargin = Ui.dp(this, 20);
+        mlp.bottomMargin = Ui.dp(this, 20);
+        root.addView(manual, mlp);
         setContentView(root);
 
         bg = new HandlerThread("hg-qr");
