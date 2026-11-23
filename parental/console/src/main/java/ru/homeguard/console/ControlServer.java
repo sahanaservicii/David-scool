@@ -308,6 +308,17 @@ public class ControlServer {
                     .setContentIntent(pi);
             nm.notify(id, b.build());
         } catch (Exception ignored) {}
+        // Optional local HA webhook (off unless configured in Settings).
+        // Offload to a short-lived thread: never block the poll response.
+        if (HaBridge.enabled(ctx)) {
+            final String d = device, t = text;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    HaBridge.send(ctx, d, t);
+                }
+            }, "hg-ha-bridge").start();
+        }
     }
 
     private static int stableId(String device) {

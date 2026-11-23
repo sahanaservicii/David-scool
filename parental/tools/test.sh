@@ -35,5 +35,22 @@ for f in \
 done
 echo "guard OK"
 
+echo "== HA bridge guard =="
+# Мост в HA — только локальный webhook, без токенов и хардкод-адресов.
+HB=console/src/main/java/ru/homeguard/console/HaBridge.java
+if grep -Eqi 'Bearer |HASS_TOKEN|Authorization|sahanovschi|192\.168\.1\.156' "$HB"; then
+    echo "FAIL: $HB содержит токен или захардкоженный адрес" >&2
+    exit 1
+fi
+if ! grep -q 'setRequestMethod("POST")' "$HB" || ! grep -q 'setConnectTimeout' "$HB"; then
+    echo "FAIL: $HB не задаёт POST/таймауты" >&2
+    exit 1
+fi
+if ! grep -q 'HaBridge.enabled(ctx)' console/src/main/java/ru/homeguard/console/ControlServer.java; then
+    echo "FAIL: ControlServer не вызывает мост HA" >&2
+    exit 1
+fi
+echo "HA bridge guard OK"
+
 echo "== protocol tests =="
 "$JAVA" -cp "$OUT:$ANDROID_JAR" TestRunner

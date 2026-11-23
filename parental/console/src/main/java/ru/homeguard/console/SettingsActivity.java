@@ -142,6 +142,28 @@ public class SettingsActivity extends Activity {
         card.addView(infoRow("Все адреса", all.length() == 0 ? "нет" : all.toString()));
         card.addView(infoRow("Сеть", Util.wifiName(this)));
 
+        // Local HA webhook (optional). Empty = disabled; no token in the app.
+        final android.widget.EditText hook = Ui.edit(this,
+                "http://192.168.1.156:8123/api/webhook/homeguard_sos_bridge",
+                HaBridge.url(this));
+        hook.setSingleLine(true);
+        card.addView(hook);
+        LinearLayout haRow = Ui.row(this);
+        haRow.setPadding(0, Ui.dp(this, 10), 0, 0);
+        haRow.addView(Ui.txt(this, "Мост в Home Assistant", 13, Ui.MUTED, false),
+                new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        android.widget.Button haSave = Ui.ghost(this, "Сохранить", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HaBridge.setUrl(SettingsActivity.this, hook.getText().toString());
+                Ui.toast(SettingsActivity.this,
+                        HaBridge.enabled(SettingsActivity.this)
+                                ? "Мост включён" : "Мост выключен");
+            }
+        });
+        haRow.addView(haSave);
+        card.addView(haRow);
+
         LinearLayout actions = Ui.row(this);
         actions.setPadding(0, Ui.dp(this, 12), 0, 0);
         android.widget.Button ping = Ui.ghost(this, "Проверить", new View.OnClickListener() {
