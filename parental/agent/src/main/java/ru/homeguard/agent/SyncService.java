@@ -45,10 +45,13 @@ public class SyncService extends Service {
 
     public static void start(Context c) {
         try {
+            AgentLog.i("svc", "start requested");
             Intent i = new Intent(c, SyncService.class);
             if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i);
             else c.startService(i);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            AgentLog.e("svc", "start failed: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
     }
 
     public static void sos(Context c) {
@@ -128,6 +131,7 @@ public class SyncService extends Service {
                 if (msg == null || msg.isEmpty()) msg = e.getClass().getSimpleName();
                 if (msg.length() > 120) msg = msg.substring(0, 120);
                 Store.put(SyncService.this, "last_sync_result", "ошибка: " + msg);
+                AgentLog.e("sync", "loop error: " + e.getClass().getSimpleName() + ": " + msg);
                 delay = Math.min(nextDelay * 2, 240_000L);
             } finally {
                 nextDelay = delay;
@@ -144,11 +148,14 @@ public class SyncService extends Service {
         java.util.List<String> servers = Store.servers(c);
         if (servers.isEmpty() || secret == null) {
             lastResult = "нет привязки";
+            AgentLog.w("sync", "no pairing: servers=" + servers.size() + " secret=" + (secret != null));
+            Store.put(c, "last_sync_result", lastResult);
             return;
         }
 
         JSONObject state = buildState();
         String body = state.toString();
+        AgentLog.i("sync", "start servers=" + servers + " events=" + (state.optJSONArray("events") == null ? 0 : state.optJSONArray("events").length()));
 
         // Try the endpoint that worked last time first, then the alternatives
         // (LAN at home, WireGuard outside).
@@ -171,7 +178,19 @@ public class SyncService extends Service {
             headers.put(Protocol.H_SIG,
                     Protocol.sign(secret, "POST", Protocol.PATH_SYNC, ts, nonce, body));
 
-            Http.Resp attempt = Http.post(server + Protocol.PATH_SYNC, headers, body, 6000, 12000);
+            AgentLog.i("sync", "POST " + server + Protocol.PATH_SYNC);
+            Http.Resp attempt;
+            try {
+                attempt = Http.post(server + Protocol.PATH_SYNC, headers, body, 6000, 12000);
+            } catch (Exception ex) {
+                String em = ex.getClass().getSimpleName() + ": " + ex.getMessage();
+                AgentLog.e("sync", "exception " + server + " -> " + em);
+                lastError = "EXC " + ex.getClass().getSimpleName();
+                continue;
+            }
+            String bodyHint = attempt.body == null ? "" : attempt.body.replaceAll("[\r\n\t]+", " ").trim();
+            if (bodyHint.length() > 120) bodyHint = bodyHint.substring(0, 120) + "…";
+            AgentLog.i("sync", "resp " + server + " code=" + attempt.code + " body=" + bodyHint);
             if (attempt.ok()) {
                 resp = attempt;
                 used = server;
@@ -183,12 +202,14 @@ public class SyncService extends Service {
         if (resp == null) {
             lastResult = "нет связи (" + lastError + ")";
             Store.put(c, "last_sync_result", lastResult);
+            AgentLog.w("sync", "all servers failed: " + lastError);
             throw new IllegalStateException("no server: " + lastError);
         }
         Store.put(c, "server_active", used);
         if (!verifyResponse(secret, Protocol.PATH_SYNC, resp)) {
             lastResult = "ответ без подписи";
             Store.put(c, "last_sync_result", lastResult);
+            AgentLog.e("sync", "bad response signature from " + used);
             throw new IllegalStateException("unverified response");
         }
         JSONObject r = new JSONObject(resp.body);
@@ -198,6 +219,7 @@ public class SyncService extends Service {
                 .format(new java.util.Date());
         Store.putLong(c, "last_sync", System.currentTimeMillis());
         Store.put(c, "last_sync_result", lastResult + " via " + used);
+        AgentLog.i("sync", "ok via " + used + " policy=" + (r.optJSONObject("policy") != null ? r.optJSONObject("policy").optInt("v",-1) : -1));
 
         JSONObject policy = r.optJSONObject("policy");
         if (policy != null) {

@@ -302,9 +302,11 @@ public class MainActivity extends Activity {
             buildChecklist(owner, admin, paired, notif, loc, usage, a11y, overlay, battery, adb);
         }
 
+        java.util.List<AgentLog.Entry> _ls = AgentLog.snapshot();
+        String _lt = _ls.isEmpty() ? "0" : (_ls.size() + ":" + _ls.get(_ls.size()-1).ts);
         String dsig = last + "|" + pv + "|" + LockState.locked + "|" + LockState.reason + "|"
                 + (Usage.totalMs(this) / 60000L) + "|" + LocationReporter.providerHint(this)
-                + "|" + adb + "|" + Store.serverUrl(this);
+                + "|" + adb + "|" + Store.serverUrl(this) + "|" + _lt;
         if (!dsig.equals(diagSig)) {
             diagSig = dsig;
             buildDiagnostics();
@@ -491,6 +493,45 @@ public class MainActivity extends Activity {
             }
         }), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         diagnostics.addView(actions);
+
+        LinearLayout logActions = Ui.row(this);
+        Ui.pad(logActions, this, 0, 8, 0, 0);
+        logActions.addView(Ui.ghost(this, "Копировать лог", new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                Ui.copy(MainActivity.this, AgentLog.dump());
+                Ui.toast(MainActivity.this, "Лог скопирован");
+            }
+        }), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        LinearLayout.LayoutParams lpClear = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        lpClear.leftMargin = Ui.dp(this, 10);
+        logActions.addView(Ui.ghost(this, "Очистить лог", new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                AgentLog.clear();
+                Ui.toast(MainActivity.this, "Лог очищен");
+                buildDiagnostics();
+            }
+        }), lpClear);
+        diagnostics.addView(logActions);
+
+        java.util.List<AgentLog.Entry> logs = AgentLog.snapshot();
+        diagnostics.addView(Ui.txt(this, "Лог агента (" + logs.size() + ")", 12.5f, Ui.MUTED, true), lp(0, 10));
+        LinearLayout logBox = Ui.col(this);
+        logBox.setBackground(Ui.round(this, 0x0F1A2433, 12));
+        Ui.pad(logBox, this, 10, 8, 10, 8);
+        int start = Math.max(0, logs.size() - 40);
+        if (logs.isEmpty()) {
+            logBox.addView(Ui.txt(this, "Пока пусто. Нажмите «Проверить подключение» или «Сканировать QR».", 11.5f, Ui.MUTED, false));
+        } else {
+            for (int i = logs.size() - 1; i >= start; i--) {
+                AgentLog.Entry e = logs.get(i);
+                int color = "E".equals(e.level) ? 0xFFB91C1C : "W".equals(e.level) ? 0xFFB45309 : Ui.INK2;
+                TextView lt = Ui.txt(this, e.line(), 10.5f, color, false);
+                lt.setTypeface(android.graphics.Typeface.MONOSPACE);
+                lt.setPadding(0, Ui.dp(this, 3), 0, Ui.dp(this, 3));
+                logBox.addView(lt);
+            }
+        }
+        diagnostics.addView(logBox, lp(0, 6));
     }
 
     private String diagText() {
@@ -576,11 +617,15 @@ public class MainActivity extends Activity {
         if (res == RESULT_OK && data != null) {
             String code = data.getStringExtra(ScanActivity.EXTRA_PAIRING);
             if (code != null && !code.trim().isEmpty()) {
+                AgentLog.i("pair", "QR scanned, payload length=" + code.trim().length());
                 pairField.setText(code.trim());
                 Ui.toast(this, "Код считан — проверьте и нажмите «Сохранить привязку»");
                 scrollToPairing();
+            } else {
+                AgentLog.w("pair", "QR scan returned empty payload");
             }
         } else if (res == RESULT_CANCELED) {
+            AgentLog.i("pair", "QR scan canceled/manual");
             Ui.toast(this, "QR не считан — введите код вручную");
         }
     }
@@ -599,6 +644,7 @@ public class MainActivity extends Activity {
         String raw = pairField.getText().toString().trim();
         String[] parts = raw.split(":", 5);
         if (parts.length != 5 || !parts[0].equalsIgnoreCase("hg1")) {
+            AgentLog.w("pair", "invalid format parts=" + parts.length);
             Ui.toast(this, "Формат: hg1:IP[+IP_ТУННЕЛЯ]:PORT:ID:КОД");
             return;
         }
@@ -607,12 +653,14 @@ public class MainActivity extends Activity {
         try {
             port = Integer.parseInt(parts[2]);
         } catch (Exception e) {
+            AgentLog.w("pair", "invalid port");
             Ui.toast(this, "Порт не число");
             return;
         }
         String deviceId = parts[3];
         String code = parts[4];
         if (Protocol.normalizeCode(code).length() < 8) {
+            AgentLog.w("pair", "code too short");
             Ui.toast(this, "Код слишком короткий");
             return;
         }
@@ -632,6 +680,7 @@ public class MainActivity extends Activity {
         }
         final String fid = deviceId;
         final String fcode = Protocol.normalizeCode(code);
+        AgentLog.i("pair", "parsed device=" + fid + " servers=" + urls);
         StringBuilder where = new StringBuilder();
         for (String u : urls) where.append("\n• ").append(u.replace("http://", ""));
         new android.app.AlertDialog.Builder(this)
@@ -678,10 +727,12 @@ public class MainActivity extends Activity {
             String name = nameField.getText().toString().trim();
             if (!name.isEmpty()) Store.put(this, "device_name", name);
             Store.putInt(this, "policy_v", -1);
+            AgentLog.i("pair", "saved device=" + deviceId + " servers=" + urls);
             Ui.toast(this, "Привязка сохранена");
             SyncService.start(this);
             render();
         } catch (Exception e) {
+            AgentLog.e("pair", "save failed: " + e.getClass().getSimpleName() + ": " + e.getMessage());
             Ui.toast(this, "Не удалось сохранить: " + e.getMessage());
         }
     }

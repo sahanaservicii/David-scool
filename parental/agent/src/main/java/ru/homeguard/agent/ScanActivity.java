@@ -47,6 +47,8 @@ public class ScanActivity extends Activity {
     private volatile boolean done;
     private volatile byte[] frame;
     private volatile int fw, fh;
+    private volatile int frames;
+    private volatile int decodeMiss;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -71,6 +73,7 @@ public class ScanActivity extends Activity {
 
         android.widget.Button manual = Ui.ghost(this, "Ввести код вручную", new android.view.View.OnClickListener() {
             @Override public void onClick(android.view.View v) {
+                AgentLog.i("qr", "manual input requested frames=" + frames + " miss=" + decodeMiss);
                 done = true;
                 setResult(RESULT_CANCELED);
                 finish();
@@ -117,8 +120,8 @@ public class ScanActivity extends Activity {
     public void onRequestPermissionsResult(int req, String[] perms, int[] res) {
         super.onRequestPermissionsResult(req, perms, res);
         if (req == REQ_CAMERA) {
-            if (res.length > 0 && res[0] == PackageManager.PERMISSION_GRANTED) open();
-            else fail("Разрешите камеру в настройках");
+            if (res.length > 0 && res[0] == PackageManager.PERMISSION_GRANTED) { AgentLog.i("qr","CAMERA granted"); open(); }
+            else { AgentLog.w("qr","CAMERA denied"); fail("Разрешите камеру в настройках"); }
         }
     }
 
@@ -152,8 +155,9 @@ public class ScanActivity extends Activity {
                         }
                     });
                 }
-                @Override public void onDisconnected(CameraDevice c) { c.close(); }
+                @Override public void onDisconnected(CameraDevice c) { AgentLog.w("qr","camera disconnected"); c.close(); }
                 @Override public void onError(CameraDevice c, int e) {
+                    AgentLog.e("qr","camera error "+e);
                     fail("Ошибка камеры " + e);
                 }
             }, ui);
@@ -172,6 +176,7 @@ public class ScanActivity extends Activity {
             Size shot = pickSize(sizes, 1280);
             fw = shot.getWidth();
             fh = shot.getHeight();
+            AgentLog.i("qr", "session start preview=" + tw + "x" + th + " capture=" + fw + "x" + fh);
             reader = ImageReader.newInstance(fw, fh, ImageFormat.YUV_420_888, 2);
             reader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -183,6 +188,10 @@ public class ScanActivity extends Activity {
                         byte[] gray = yPlane(img);
                         if (gray == null) return;
                         frame = gray;
+                        frames++;
+                        if (frames == 1 || frames % 30 == 0) {
+                            AgentLog.i("qr", "frames=" + frames + " miss=" + decodeMiss + " size=" + fw + "x" + fh);
+                        }
                         bgHandler.post(analyze);
                     } catch (Exception ignored) {
                     } finally {
@@ -255,14 +264,30 @@ public class ScanActivity extends Activity {
             if (done || g == null) return;
             String result = QrCodec.decodeImage(g, fw, fh);
             if (result != null && result.startsWith("hg1:")) {
+                AgentLog.i("qr", "decoded " + redactPairing(result));
                 found(result);
+            } else {
+                decodeMiss++;
+                if (decodeMiss == 1 || decodeMiss % 50 == 0) {
+                    AgentLog.i("qr", "no qr yet frames=" + frames + " miss=" + decodeMiss);
+                }
             }
         }
     };
 
+    private static String redactPairing(String p) {
+        if (p == null) return "null";
+        String[] parts = p.split(":");
+        if (parts.length >= 5) {
+            return parts[0] + ":" + parts[1] + ":" + parts[2] + ":" + parts[3] + ":<redacted>";
+        }
+        return "hg1:<invalid>";
+    }
+
     private void found(final String text) {
         if (done) return;
         done = true;
+        AgentLog.i("qr", "QR found, returning to MainActivity");
         ui.post(new Runnable() {
             @Override public void run() {
                 android.content.Intent i = new android.content.Intent();
@@ -276,6 +301,7 @@ public class ScanActivity extends Activity {
     private void fail(final String msg) {
         if (done) return;
         done = true;
+        AgentLog.e("qr", "fail: " + msg + " frames=" + frames + " miss=" + decodeMiss);
         ui.post(new Runnable() {
             @Override public void run() {
                 Ui.toast(ScanActivity.this, msg);

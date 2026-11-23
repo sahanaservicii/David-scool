@@ -310,20 +310,23 @@ public final class QrCodec {
         // from the TL center onto the frame using the TL->TR and TL->BL vectors.
         float dx1 = (tr.x - tl.x) / 30f, dy1 = (tr.y - tl.y) / 30f;
         float dx2 = (bl.x - tl.x) / 30f, dy2 = (bl.y - tl.y) / 30f;
-        // Try a few thresholds to survive poor lighting/auto-exposure.
+        // Try a few thresholds and polarity to survive poor lighting/auto-exposure.
         for (int th : new int[]{128, 96, 160, 72, 184}) {
-            boolean[][] m = new boolean[SIZE][SIZE];
-            for (int my = 0; my < SIZE; my++) {
-                for (int mx = 0; mx < SIZE; mx++) {
-                    float u = mx - 3f, v = my - 3f;            // module offset from TL finder center
-                    int ix = Math.round(tl.x + u * dx1 + v * dx2);
-                    int iy = Math.round(tl.y + u * dy1 + v * dy2);
-                    m[my][mx] = ix >= 0 && iy >= 0 && ix < w && iy < h
-                            && (g[iy * w + ix] & 0xFF) < th;
+            for (int inv = 0; inv < 2; inv++) {
+                boolean[][] m = new boolean[SIZE][SIZE];
+                for (int my = 0; my < SIZE; my++) {
+                    for (int mx = 0; mx < SIZE; mx++) {
+                        float u = mx - 3f, v = my - 3f;            // module offset from TL finder center
+                        int ix = Math.round(tl.x + u * dx1 + v * dx2);
+                        int iy = Math.round(tl.y + u * dy1 + v * dy2);
+                        boolean dark = ix >= 0 && iy >= 0 && ix < w && iy < h
+                                && (g[iy * w + ix] & 0xFF) < th;
+                        m[my][mx] = inv == 0 ? dark : !dark;
+                    }
                 }
+                String r = decode(m);
+                if (r != null) return r;
             }
-            String r = decode(m);
-            if (r != null) return r;
         }
         return null;
     }
