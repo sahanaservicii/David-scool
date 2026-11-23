@@ -104,6 +104,37 @@ textarea { width: 100%; padding: 10px; border: 2px solid #e0d8c2; border-radius:
 .how { margin-top: 36px; background: #fffbe9; border-radius: 16px; padding: 20px 24px; }
 .how h3 { margin-top: 0; }
 footer { text-align: center; color: #999; font-size: .85rem; padding: 20px; }
+
+/* Сводка заданий в левом нижнем углу детского экрана */
+.lesson-panel {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 45;
+  width: 320px;
+  max-height: 46vh;
+  overflow-y: auto;
+  background: #fffdf6;
+  border: 2px solid #e0d8c2;
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+  font-size: .9rem;
+}
+.lesson-panel .lp-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.lesson-panel .lp-head strong { font-size: 1rem; }
+.lesson-panel .lp-toggle {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.2rem; line-height: 1; color: var(--ink); padding: 0 4px;
+}
+.lesson-panel .lp-date { color: #888; font-size: .8rem; margin: 2px 0 8px; }
+.lesson-panel .lp-item { padding: 6px 0; border-top: 1px dashed #e9e2cf; }
+.lesson-panel .lp-item:first-child { border-top: none; }
+.lesson-panel .lp-name { font-weight: 700; }
+.lesson-panel .lp-task { color: #555; font-size: .82rem; line-height: 1.35; }
+.lesson-panel.collapsed .lp-date, .lesson-panel.collapsed .lp-list { display: none; }
 @media (max-width: 600px) {
   .hero h1 { font-size: 1.6rem; }
+  .lesson-panel { left: 8px; bottom: 8px; width: calc(100% - 16px); max-height: 34vh; font-size: .85rem; }
+  main { padding-bottom: 40vh; }
 }
