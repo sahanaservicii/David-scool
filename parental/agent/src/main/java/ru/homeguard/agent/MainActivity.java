@@ -608,6 +608,52 @@ public class MainActivity extends Activity {
         card.addView(Ui.txt(this, "Код создаётся в консоли родителя: "
                         + "ребёнок → «Привязать». Работает в домашней сети и через туннель.",
                 11.5f, Ui.MUTED, false), lp(0, 10));
+
+        // Запасной адрес без перепривязки (не меняет секрет/deviceId).
+        card.addView(Ui.divider(this), lp(0, 12));
+        card.addView(Ui.txt(this, "Запасной адрес сервера (без кода)", 13f, Ui.INK2, true), lp(0, 10));
+        card.addView(Ui.txt(this, "Если телефон в WireGuard/VPN и LAN-адрес недоступен, добавьте адрес консоли в туннеле. Секрет не меняется.", 11.5f, Ui.MUTED, false), lp(0, 4));
+        final android.widget.EditText extraField = Ui.edit(this, "192.168.9.2:8787", "192.168.9.2:8787");
+        extraField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        card.addView(extraField, lp(0, 6));
+        card.addView(Ui.ghost(this, "Добавить адрес", new View.OnClickListener() {
+            @Override public void onClick(View v) { addServer(extraField.getText().toString().trim()); }
+        }), lp(0, 8));
+    }
+
+    private void addServer(String raw) {
+        if (!Store.paired(MainActivity.this)) {
+            AgentLog.w("pair", "add server rejected: not paired");
+            Ui.toast(this, "Сначала привяжите устройство кодом");
+            return;
+        }
+        String s = raw == null ? "" : raw.trim();
+        s = s.replace("http://", "").replace("https://", "").replaceAll("/+$", "");
+        if (s.isEmpty()) { Ui.toast(this, "Введите адрес, например 192.168.9.2:8787"); return; }
+        String host = s;
+        int port = 8787;
+        int colon = s.lastIndexOf(':');
+        if (colon > 0 && colon < s.length() - 1) {
+            String p = s.substring(colon + 1);
+            if (p.matches("\\d+")) {
+                try { port = Integer.parseInt(p); host = s.substring(0, colon); } catch (Exception ignored) {}
+            }
+        }
+        host = host.trim();
+        if (!privateHost(host)) {
+            AgentLog.w("pair", "add server rejected: non-private host");
+            Ui.toast(this, "Только адрес домашней сети: 192.168.x, 10.x, 172.16–31.x");
+            return;
+        }
+        if (port < 1 || port > 65535) { Ui.toast(this, "Некорректный порт"); return; }
+        String url = "http://" + host + ":" + port;
+        java.util.List<String> servers = Store.servers(this);
+        if (!servers.contains(url)) servers.add(url);
+        Store.setServers(this, servers);
+        AgentLog.i("pair", "server added " + url + " servers=" + servers);
+        Ui.toast(this, "Адрес добавлен: " + host + ":" + port);
+        SyncService.start(this);
+        render();
     }
 
     @Override
