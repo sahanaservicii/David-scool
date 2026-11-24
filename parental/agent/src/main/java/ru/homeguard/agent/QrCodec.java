@@ -253,10 +253,31 @@ public final class QrCodec {
         }
     }
 
-    /** Decodes a QR from a grayscale frame; retries finder detection at several thresholds. */
+    /** Decodes a QR from a grayscale frame; retries thresholds and image orientation. */
     public static String decodeImage(byte[] g, int w, int h) {
-        for (int fth : new int[]{128, 96, 160, 72, 184}) {
+        if (g == null || w < 20 || h < 20) return null;
+        int[] ths = {128, 96, 160, 72, 184};
+        // Original landscape frame.
+        for (int fth : ths) {
             String r = decodeImageTh(g, w, h, fth);
+            if (r != null) return r;
+        }
+        // Transposed frame: QR tilted/rotated 90 degrees in the camera preview.
+        byte[] t = new byte[w * h];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) t[x * h + y] = g[y * w + x];
+        }
+        for (int fth : ths) {
+            String r = decodeImageTh(t, h, w, fth);
+            if (r != null) return r;
+        }
+        // 180 degrees.
+        byte[] r180 = new byte[w * h];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) r180[(h - 1 - y) * w + (w - 1 - x)] = g[y * w + x];
+        }
+        for (int fth : ths) {
+            String r = decodeImageTh(r180, w, h, fth);
             if (r != null) return r;
         }
         return null;

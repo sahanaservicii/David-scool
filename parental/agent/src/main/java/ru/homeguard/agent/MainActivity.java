@@ -264,7 +264,9 @@ public class MainActivity extends Activity {
         readyLabel.setText("Готовность " + done + " из " + total);
         heroTitle.setText(done == total ? "Телефон под присмотром"
                 : "Осталось шагов: " + (total - done));
+        boolean addrOnly = !paired && Store.serverUrl(this) != null;
         heroSub.setText(paired ? "Связь с консолью родителя"
+                : addrOnly ? "Адрес есть, но привязка не завершена — введите код"
                 : "Привяжите телефон к консоли");
         if (done == total) {
             heroPill.setText("ЗАЩИТА ВКЛЮЧЕНА");
