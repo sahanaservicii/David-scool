@@ -62,6 +62,7 @@ public class SyncService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        AgentLog.init(this);
         createChannels();
         startForeground(NOTIF_ID, notification("HomeGuard: запуск…"));
         thread = new HandlerThread("hg-sync");
@@ -156,6 +157,7 @@ public class SyncService extends Service {
         JSONObject state = buildState();
         String body = state.toString();
         AgentLog.i("sync", "start servers=" + servers + " events=" + (state.optJSONArray("events") == null ? 0 : state.optJSONArray("events").length()));
+        DiagRelay.send(c, "sync_req", "POST /api/v1/sync servers=" + servers, body);
 
         // Try the endpoint that worked last time first, then the alternatives
         // (LAN at home, WireGuard outside).
@@ -191,6 +193,7 @@ public class SyncService extends Service {
             String bodyHint = attempt.body == null ? "" : attempt.body.replaceAll("[\r\n\t]+", " ").trim();
             if (bodyHint.length() > 120) bodyHint = bodyHint.substring(0, 120) + "…";
             AgentLog.i("sync", "resp " + server + " code=" + attempt.code + " body=" + bodyHint);
+            DiagRelay.send(c, "sync_resp", "server=" + server + " code=" + attempt.code, attempt.body);
             if (attempt.ok()) {
                 resp = attempt;
                 used = server;

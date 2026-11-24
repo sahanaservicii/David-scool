@@ -27,20 +27,30 @@ public final class AgentLog {
 
     private static final int MAX = 400;
     private static final Deque<Entry> BUF = new ArrayDeque<>();
+    private static volatile android.content.Context appCtx;
 
     private AgentLog() {}
+
+    public static void init(android.content.Context c) {
+        if (c != null) appCtx = c.getApplicationContext();
+    }
 
     public static synchronized void i(String tag, String text) { add("I", tag, text); }
     public static synchronized void w(String tag, String text) { add("W", tag, text); }
     public static synchronized void e(String tag, String text) { add("E", tag, text); }
 
     private static void add(String level, String tag, String text) {
-        String tg = tag == null ? "app" : tag.replaceAll("[\\r\\n\\t]+", " ").trim();
-        String t = text == null ? "" : text.replaceAll("[\\r\\n\\t]+", " ").trim();
+        String tg = tag == null ? "app" : tag.replaceAll("[\r\n\t]+", " ").trim();
+        String t = text == null ? "" : text.replaceAll("[\r\n\t]+", " ").trim();
         if (tg.length() > 24) tg = tg.substring(0, 24);
         if (t.length() > 300) t = t.substring(0, 300) + "…";
-        BUF.addLast(new Entry(System.currentTimeMillis(), level, tg, t));
+        Entry e = new Entry(System.currentTimeMillis(), level, tg, t);
+        BUF.addLast(e);
         while (BUF.size() > MAX) BUF.removeFirst();
+        android.content.Context c = appCtx;
+        if (c != null) {
+            try { DiagRelay.send(c, "log", e.line(), null); } catch (Exception ignored) {}
+        }
     }
 
     public static synchronized List<Entry> snapshot() {
