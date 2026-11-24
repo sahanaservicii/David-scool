@@ -19,13 +19,16 @@ cd /root/workspace
 git add docs/
 git commit -m "site: новая домашка"
 git push origin main
+
+# Публикация на GitHub Pages идёт из ветки gh-pages (корень).
+# После изменений синхронизируйте docs/ в gh-pages и запушьте её.
 ```
 
-## Публикация (один раз)
+При изменении `data.js`/`app.js`/`style.css` увеличьте версию `?v=...` в `index.html`, чтобы браузер не держал старый кэш.
 
-В настройках репозитория `David-scool`: Settings → Pages → Source:
-**Deploy from a branch** → Branch `main`, папка `/docs` → Save.
-Ссылка: `https://sahanaservicii.github.io/David-scool/`
+## Публикация
+
+Сайт публикуется из ветки **`gh-pages`** (root). Ссылка: `https://sahanaservicii.github.io/David-scool/`
 
 ## Офлайн-проверка
 

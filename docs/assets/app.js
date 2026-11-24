@@ -7,6 +7,7 @@ const Store = {
   load() { try { return JSON.parse(localStorage.getItem(this.key)) || {}; } catch (e) { return {}; } },
   save(data) { localStorage.setItem(this.key, JSON.stringify(data)); },
   stars() { const d = this.load(); return Object.values(d).reduce((s, v) => s + (v.stars || 0), 0); },
+  starsFor(ids) { const d = this.load(); return ids.reduce((s, id) => s + ((d[id] && d[id].stars) || 0), 0); },
   done(id) { const d = this.load(); return !!(d[id] && d[id].done); },
   mark(id, stars) {
     const d = this.load();
@@ -15,7 +16,8 @@ const Store = {
   },
   log() { try { return JSON.parse(localStorage.getItem(this.logKey)) || {}; } catch (e) { return {}; } },
   addErrors(id, payload) { const d = this.log(); d[id] = payload; localStorage.setItem(this.logKey, JSON.stringify(d)); },
-  clearLog() { localStorage.removeItem(this.logKey); localStorage.removeItem(this.key); }
+  clearLog() { localStorage.removeItem(this.logKey); localStorage.removeItem(this.key); },
+  clearLogFor(ids) { const d = this.log(); ids.forEach(id => delete d[id]); localStorage.setItem(this.logKey, JSON.stringify(d)); }
 };
 
 const Report = {
@@ -42,7 +44,11 @@ const Report = {
     parts.slice(1).forEach(seg => {
       const [id, data] = seg.split('=');
       if (!data) return;
-      const subj = App.lesson.subjects.find(s => s.id === id);
+      let subj = App.lesson.subjects.find(s => s.id === id);
+      if (!subj) {
+        const all = (window.SCHOOL_DATA && window.SCHOOL_DATA.lessons) || [];
+        for (const l of all) { subj = l.subjects.find(s => s.id === id); if (subj) break; }
+      }
       if (!subj) return;
       if (subj.game === 'quiz') {
         data.split(',').forEach(pair => {
@@ -107,7 +113,7 @@ const App = {
     this.renderSubjects();
     this.renderLessonPanel();
     this.updateProgress();
-    document.getElementById('totalStars').textContent = Store.stars();
+    document.getElementById('totalStars').textContent = Store.starsFor(this.lesson.subjects.map(s => s.id));
     this.renderJournal();
     this.bindButtons();
   },
@@ -166,9 +172,10 @@ const App = {
     const list = document.getElementById('lpList');
     list.innerHTML = '';
     l.subjects.forEach(s => {
+      const done = Store.done(s.id);
       const el = document.createElement('div');
-      el.className = 'lp-item';
-      el.innerHTML = `<div class="lp-name">${s.emoji} ${s.name}</div><div class="lp-task">${s.task}</div>`;
+      el.className = 'lp-item' + (done ? ' lp-done' : '');
+      el.innerHTML = `<div class="lp-name">${done ? '✅' : s.emoji} ${s.name}</div><div class="lp-task">${s.task}</div>`;
       list.appendChild(el);
     });
   },
@@ -186,20 +193,23 @@ const App = {
   finish(subject, stars, items, type, correct, total) {
     Store.mark(subject.id, stars);
     Store.addErrors(subject.id, { type, items, correct, total });
-    document.getElementById('totalStars').textContent = Store.stars();
+    document.getElementById('totalStars').textContent = Store.starsFor(this.lesson.subjects.map(s => s.id));
     this.renderSubjects();
+    this.renderLessonPanel();
     this.updateProgress();
     this.renderJournal();
   },
   renderJournal() {
     const box = document.getElementById('journalBody');
     const log = Store.log();
-    if (!Object.keys(log).length) {
+    const ids = this.lesson.subjects.map(s => s.id);
+    const entries = ids.filter(id => log[id]).map(id => [id, log[id]]);
+    if (!entries.length) {
       box.innerHTML = '<p class="hint">Заданий пока нет. Начните выполнять — здесь появятся ошибки и подсказки.</p>';
       return;
     }
     box.innerHTML = '';
-    Object.entries(log).forEach(([id, rec]) => {
+    entries.forEach(([id, rec]) => {
       const subj = this.lesson.subjects.find(s => s.id === id);
       const div = document.createElement('div');
       const errors = rec.items || [];
@@ -208,10 +218,12 @@ const App = {
       if (!errors.length) html += '<div class="error-item"><span class="right">✅ Ошибок нет — отличная работа!</span></div>';
       errors.forEach(it => {
         let q, given, answer, why;
-        if (rec.type === 'quiz') {
+        if (rec.type === 'quiz' && subj && subj.questions[it.i]) {
           const question = subj.questions[it.i];
-          q = question.q; given = question.options[it.given]; answer = question.options[question.answer]; why = question.why;
-        } else { q = it.q; given = it.given; answer = 'см. проверку'; why = 'Проверь вычисление.'; }
+          q = question.q; given = question.options[it.given] || '—'; answer = question.options[question.answer]; why = question.why;
+        } else if (rec.type === 'math') {
+          q = it.q; given = it.given; answer = it.answer || 'см. проверку'; why = it.why || 'Проверь вычисление.';
+        } else { q = it.q || 'Вопрос'; given = it.given || '—'; answer = it.answer || '—'; why = it.why || ''; }
         html += `<div class="error-item"><div>❓ ${q}</div>
           <div><span class="wrong">Твой ответ: ${given}</span> · <span class="right">Правильно: ${answer}</span></div>
           <div class="why">💡 ${why}</div></div>`;
@@ -228,9 +240,11 @@ const App = {
       document.getElementById('qrModal').classList.remove('hidden');
     };
     document.getElementById('clearReportBtn').onclick = () => {
-      if (confirm('Очистить весь журнал ошибок и звёздочки?')) {
-        Store.clearLog(); this.renderJournal(); this.renderSubjects(); this.updateProgress();
-        document.getElementById('totalStars').textContent = '0';
+      if (confirm('Очистить журнал ошибок по текущему уроку? Звёздочки останутся.')) {
+        const ids = this.lesson.subjects.map(s => s.id);
+        Store.clearLogFor(ids);
+        this.renderJournal(); this.renderSubjects(); this.updateProgress();
+        document.getElementById('totalStars').textContent = Store.starsFor(ids);
       }
     };
     document.getElementById('showReportBtn').onclick = () => {

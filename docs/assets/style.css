@@ -132,6 +132,7 @@ footer { text-align: center; color: #999; font-size: .85rem; padding: 20px; }
 .lesson-panel .lp-item:first-child { border-top: none; }
 .lesson-panel .lp-name { font-weight: 700; }
 .lesson-panel .lp-task { color: #555; font-size: .82rem; line-height: 1.35; }
+.lesson-panel .lp-done .lp-name { color: #27ae60; }
 .lesson-panel.collapsed .lp-date, .lesson-panel.collapsed .lp-list { display: none; }
 @media (max-width: 600px) {
   .hero h1 { font-size: 1.6rem; }
