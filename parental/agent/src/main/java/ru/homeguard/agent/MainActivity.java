@@ -327,7 +327,7 @@ public class MainActivity extends Activity {
         addPending(pending, pendingNames, !loc, "Геолокация", new Runnable() { @Override public void run() { askLocation(); } });
         addPending(pending, pendingNames, !usage, "Статистика использования", new Runnable() { @Override public void run() { Ui.openSettings(MainActivity.this, Settings.ACTION_USAGE_ACCESS_SETTINGS, null); } });
         addPending(pending, pendingNames, !a11y, "Специальные возможности", new Runnable() { @Override public void run() { Ui.openSettings(MainActivity.this, Settings.ACTION_ACCESSIBILITY_SETTINGS, null); } });
-        addPending(pending, pendingNames, !overlay, "Поверх других окон", new Runnable() { @Override public void run() { openOverlay(); } });
+        addPending(pending, pendingNames, !overlay, "Поверх других окон", new Runnable() { @Override public void run() { showOverlayHelp(); } });
         addPending(pending, pendingNames, !battery, "Батарея без ограничений", new Runnable() { @Override public void run() { askBattery(); } });
         addPending(pending, pendingNames, adb, "Выключить ADB-отладку", new Runnable() { @Override public void run() { Ui.openSettings(MainActivity.this, Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS, null); } });
 
@@ -411,15 +411,7 @@ public class MainActivity extends Activity {
                 "Экран блокировки и тихий час", overlay, overlay ? "Готово" : "Нужно",
                 overlay ? Ui.GREEN : Ui.RED, new View.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
-                        try {
-                            Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                            i.setData(Uri.parse("package:" + getPackageName()));
-                            startActivity(i);
-                        } catch (Exception e) {
-                            Ui.toast(MainActivity.this, "Настройки → Приложения → Спец. доступ");
-                        }
-                    }
+                    public void onClick(View v) { showOverlayHelp(); }
                 });
 
         addRow(checklist, R.drawable.ic_battery, "Батарея без ограничений",
@@ -458,13 +450,52 @@ public class MainActivity extends Activity {
     }
 
     private void openOverlay() {
-        try {
-            Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            i.setData(Uri.parse("package:" + getPackageName()));
-            startActivity(i);
-        } catch (Exception e) {
-            Ui.toast(MainActivity.this, "Настройки → Приложения → Спец. доступ");
+        // Try direct-to-app screen first, fall back to the full "display over apps" list.
+        Intent[] tries = new Intent[] {
+                new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                        .setData(Uri.parse("package:" + getPackageName())),
+                new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION),
+                new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        .setData(Uri.parse("package:" + getPackageName()))
+        };
+        for (Intent i : tries) {
+            try {
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
+                return;
+            } catch (Exception ignored) {}
         }
+        Ui.toast(this, "Настройки → Приложения → HomeGuard Агент → Поверх других приложений");
+    }
+
+    /** Explains where the permission is on realme/ColorOS and offers direct links. */
+    private void showOverlayHelp() {
+        String msg = "Найдите в списке «HomeGuard Агент» (не «HomeGuard») и включите "
+                + "«Показывать поверх других приложений».\n\n"
+                + "Если приложения нет в списке: Настройки → Приложения → HomeGuard Агент "
+                + "→ Дополнительные разрешения / Специальный доступ → Поверх других приложений.\n\n"
+                + "На realme (ColorOS) пункт может называться «Отображать поверх других приложений» "
+                + "или быть в меню «Разрешения приложения». Если ничего не находится — откройте "
+                + "настройки приложения кнопкой ниже.";
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Доступ поверх других приложений")
+                .setMessage(msg)
+                .setPositiveButton("Открыть список", new android.content.DialogInterface.OnClickListener() {
+                    @Override public void onClick(android.content.DialogInterface d, int w) { openOverlay(); }
+                })
+                .setNeutralButton("Настройки приложения", new android.content.DialogInterface.OnClickListener() {
+                    @Override public void onClick(android.content.DialogInterface d, int w) {
+                        try {
+                            Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            i.setData(Uri.parse("package:" + getPackageName()));
+                            startActivity(i);
+                        } catch (Exception e) {
+                            Ui.toast(MainActivity.this, "Настройки → Приложения → HomeGuard Агент");
+                        }
+                    }
+                })
+                .setNegativeButton("Отмена", null)
+                .show();
     }
 
     // ------------------------------------------------------------ diagnostics

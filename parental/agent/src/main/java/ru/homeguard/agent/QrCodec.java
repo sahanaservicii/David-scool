@@ -220,14 +220,14 @@ public final class QrCodec {
     }
 
     /** Finds all 1:1:3:1:1 finder centers on one row (x coordinates). */
-    private static void findersOnRow(byte[] g, int w, int y, java.util.List<Float> out) {
+    private static void findersOnRow(byte[] g, int w, int y, int th, java.util.List<Float> out) {
         int[] runs = new int[512];
         boolean[] dark = new boolean[512];
         int runCount = 0;
-        boolean cur = (g[y * w] & 0xFF) < 128;
+        boolean cur = (g[y * w] & 0xFF) < th;
         int len = 0;
         for (int i = 0; i < w; i++) {
-            boolean v = (g[y * w + i] & 0xFF) < 128;
+            boolean v = (g[y * w + i] & 0xFF) < th;
             if (v == cur) len++;
             else {
                 if (runCount < runs.length) { runs[runCount] = len; dark[runCount] = cur; }
@@ -253,13 +253,21 @@ public final class QrCodec {
         }
     }
 
-    /** Decodes a QR directly from a grayscale camera frame (1 byte per pixel). */
+    /** Decodes a QR from a grayscale frame; retries finder detection at several thresholds. */
     public static String decodeImage(byte[] g, int w, int h) {
+        for (int fth : new int[]{128, 96, 160, 72, 184}) {
+            String r = decodeImageTh(g, w, h, fth);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
+    private static String decodeImageTh(byte[] g, int w, int h, int finderTh) {
         java.util.List<Pt> pts = new java.util.ArrayList<>();
         java.util.List<Float> xs = new java.util.ArrayList<>();
         for (int y = 2; y < h - 2; y += 2) {
             xs.clear();
-            findersOnRow(g, w, y, xs);
+            findersOnRow(g, w, y, finderTh, xs);
             for (Float cx : xs) pts.add(new Pt(cx, y));
         }
         if (pts.size() < 6) return null;
