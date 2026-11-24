@@ -58,7 +58,6 @@ public class ControlServer {
     public ControlServer(Context c) {
         this.ctx = c.getApplicationContext();
         this.db = Db.get(ctx);
-        ServerLog.init(ctx);
     }
 
     public boolean isRunning() {
@@ -214,15 +213,11 @@ public class ControlServer {
 
         if (Protocol.PATH_SYNC.equals(path)) {
             ServerLog.i(peer + " sync OK dev=" + device);
-            DiagRelay.send(ctx, "sync_req", "dev=" + device + " from=" + peer, body);
             String respBody = onSync(device, body).toString();
-            DiagRelay.send(ctx, "sync_resp", "dev=" + device + " to=" + peer, respBody);
             respond(s, 200, respBody, d, path);
         } else if (Protocol.PATH_ACK.equals(path)) {
             ServerLog.i(peer + " ack OK dev=" + device);
-            DiagRelay.send(ctx, "ack_req", "dev=" + device + " from=" + peer, body);
             String respBody = onAck(device, body).toString();
-            DiagRelay.send(ctx, "ack_resp", "dev=" + device + " to=" + peer, respBody);
             respond(s, 200, respBody, d, path);
         } else {
             ServerLog.w(peer + " " + path + " -> 404");

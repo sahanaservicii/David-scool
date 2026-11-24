@@ -27,6 +27,8 @@ import java.util.Map;
 public class SyncService extends Service {
 
     public static final String ACTION_SOS = "ru.homeguard.SOS";
+    /** Known console endpoint inside the HomeGuard WireGuard tunnel. */
+    private static final String WG_FALLBACK = "http://192.168.9.2:8787";
     private static final String CH_ID = "hg_agent_sync";
     private static final int NOTIF_ID = 1001;
     private static final int CHANNEL_ALERT = 1002;
@@ -62,7 +64,6 @@ public class SyncService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        AgentLog.init(this);
         createChannels();
         startForeground(NOTIF_ID, notification("HomeGuard: запуск…"));
         thread = new HandlerThread("hg-sync");
@@ -147,6 +148,9 @@ public class SyncService extends Service {
         final Context c = this;
         String secret = Store.secret(c);
         java.util.List<String> servers = Store.servers(c);
+        // Reliability: always probe the WG console too. A stale LAN-only pairing
+        // (e.g. 192.168.0.29) still connects when the phone is on WireGuard.
+        if (!servers.contains(WG_FALLBACK)) servers.add(WG_FALLBACK);
         if (servers.isEmpty() || secret == null) {
             lastResult = "нет привязки";
             AgentLog.w("sync", "no pairing: servers=" + servers.size() + " secret=" + (secret != null));
@@ -157,7 +161,6 @@ public class SyncService extends Service {
         JSONObject state = buildState();
         String body = state.toString();
         AgentLog.i("sync", "start servers=" + servers + " events=" + (state.optJSONArray("events") == null ? 0 : state.optJSONArray("events").length()));
-        DiagRelay.send(c, "sync_req", "POST /api/v1/sync servers=" + servers, body);
 
         // Try the endpoint that worked last time first, then the alternatives
         // (LAN at home, WireGuard outside).
@@ -193,7 +196,6 @@ public class SyncService extends Service {
             String bodyHint = attempt.body == null ? "" : attempt.body.replaceAll("[\r\n\t]+", " ").trim();
             if (bodyHint.length() > 120) bodyHint = bodyHint.substring(0, 120) + "…";
             AgentLog.i("sync", "resp " + server + " code=" + attempt.code + " body=" + bodyHint);
-            DiagRelay.send(c, "sync_resp", "server=" + server + " code=" + attempt.code, attempt.body);
             if (attempt.ok()) {
                 resp = attempt;
                 used = server;

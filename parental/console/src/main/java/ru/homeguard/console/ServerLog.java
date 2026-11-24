@@ -8,7 +8,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
-/** In-memory ring buffer for live diagnostics. No secrets, no payloads. */
+/** In-memory ring buffer for live diagnostics. No secrets, no payloads, no network. */
 public final class ServerLog {
 
     public static final class Entry {
@@ -26,13 +26,8 @@ public final class ServerLog {
 
     private static final int MAX = 300;
     private static final Deque<Entry> BUF = new ArrayDeque<>();
-    private static volatile android.content.Context appCtx;
 
     private ServerLog() {}
-
-    public static void init(android.content.Context c) {
-        if (c != null) appCtx = c.getApplicationContext();
-    }
 
     public static synchronized void i(String text) { add("I", text); }
     public static synchronized void w(String text) { add("W", text); }
@@ -41,13 +36,8 @@ public final class ServerLog {
     private static void add(String level, String text) {
         String t = text == null ? "" : text.replaceAll("[\\r\\n\\t]+", " ").trim();
         if (t.length() > 240) t = t.substring(0, 240) + "…";
-        Entry e = new Entry(System.currentTimeMillis(), level, t);
-        BUF.addLast(e);
+        BUF.addLast(new Entry(System.currentTimeMillis(), level, t));
         while (BUF.size() > MAX) BUF.removeFirst();
-        android.content.Context c = appCtx;
-        if (c != null) {
-            try { DiagRelay.send(c, "log", e.line(), null); } catch (Exception ignored) {}
-        }
     }
 
     public static synchronized List<Entry> snapshot() {

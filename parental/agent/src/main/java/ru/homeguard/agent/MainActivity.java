@@ -67,7 +67,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
-        AgentLog.init(this);
 
         scroll = Ui.scroll(this);
         LinearLayout body = Ui.body(scroll);
@@ -307,8 +306,7 @@ public class MainActivity extends Activity {
         String _lt = _ls.isEmpty() ? "0" : (_ls.size() + ":" + _ls.get(_ls.size()-1).ts);
         String dsig = last + "|" + pv + "|" + LockState.locked + "|" + LockState.reason + "|"
                 + (Usage.totalMs(this) / 60000L) + "|" + LocationReporter.providerHint(this)
-                + "|" + adb + "|" + Store.serverUrl(this) + "|" + _lt
-                + "|" + DiagRelay.enabled(this) + "|" + DiagRelay.url(this);
+                + "|" + adb + "|" + Store.serverUrl(this) + "|" + _lt;
         if (!dsig.equals(diagSig)) {
             diagSig = dsig;
             buildDiagnostics();
@@ -534,45 +532,6 @@ public class MainActivity extends Activity {
             }
         }
         diagnostics.addView(logBox, lp(0, 6));
-
-        // Временный диагностический канал (по умолчанию выключен).
-        diagnostics.addView(Ui.divider(this), lp(0, 10));
-        diagnostics.addView(Ui.txt(this, "Временная диагностика (интернет)", 12.5f, Ui.MUTED, true), lp(0, 10));
-        diagnostics.addView(Ui.txt(this,
-                "Отправляет логи и payload sync на ваш URL (Tailscale Funnel/HTTPS). "
-                + "Секреты/HMAC/коды привязки редактируются. По умолчанию выключено — отключите после диагностики.",
-                11f, Ui.MUTED, false), lp(0, 4));
-        final android.widget.EditText relayField = Ui.edit(this, "https://...ts.net/hglog", DiagRelay.url(this));
-        relayField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        diagnostics.addView(relayField, lp(0, 6));
-        LinearLayout relayActions = Ui.row(this);
-        Ui.pad(relayActions, this, 0, 8, 0, 0);
-        relayActions.addView(Ui.primary(this, DiagRelay.enabled(this) ? "Обновить URL" : "Включить отправку", new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                String u = relayField.getText().toString().trim();
-                if (!(u.startsWith("http://") || u.startsWith("https://"))) {
-                    Ui.toast(MainActivity.this, "Нужен URL http:// или https://");
-                    return;
-                }
-                DiagRelay.set(MainActivity.this, u, true);
-                AgentLog.i("diag", "relay enabled " + u);
-                Ui.toast(MainActivity.this, "Диагностика включена");
-                render();
-            }
-        }), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        LinearLayout.LayoutParams offLp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        offLp.leftMargin = Ui.dp(this, 10);
-        relayActions.addView(Ui.ghost(this, "Отключить", new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                DiagRelay.set(MainActivity.this, DiagRelay.url(MainActivity.this), false);
-                AgentLog.i("diag", "relay disabled");
-                Ui.toast(MainActivity.this, "Диагностика отключена");
-                render();
-            }
-        }), offLp);
-        diagnostics.addView(relayActions);
-        String rstatus = DiagRelay.enabled(this) ? "ВКЛ → " + DiagRelay.url(this) : "ВЫКЛ";
-        diagnostics.addView(Ui.txt(this, "Статус: " + rstatus, 11f, DiagRelay.enabled(this) ? 0xFFB45309 : Ui.MUTED, false), lp(0, 6));
     }
 
     private String diagText() {
